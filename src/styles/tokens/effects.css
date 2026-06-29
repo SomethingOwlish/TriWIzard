@@ -1,0 +1,55 @@
+/* TriWizard — Effects: radii, borders, shadows, motion, textures
+   The brand reads as carved stone & old vellum: tight radii, hairline
+   borders, deep low shadows (never soft floaty material elevation). */
+
+:root {
+  /* corner radii — stone is cut, not moulded: keep small */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  /* border widths */
+  --border-hair: 1px;
+  --border-thick: 2px;
+
+  /* shadows — deep, cold, downward; carved recesses not floating cards */
+  --shadow-sm:  0 1px 2px rgba(var(--shadow-rgb), 0.35);
+  --shadow-md:  0 4px 14px rgba(var(--shadow-rgb), 0.40);
+  --shadow-lg:  0 18px 48px rgba(var(--shadow-rgb), 0.52);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.03),
+                  inset 0 0 0 1px rgba(var(--shadow-rgb), 0.20);
+  /* etched recess for inputs / ledger wells */
+  --shadow-well: inset 0 2px 5px rgba(var(--shadow-rgb), 0.45);
+  /* accent glow — used sparingly on active dice / live elements */
+  --glow-accent: 0 0 0 1px var(--accent), 0 0 18px -2px var(--accent);
+
+  /* motion — slow, weighty, no bounce */
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.65, 0.05, 0.36, 1); /* @kind other */
+  --dur-fast: 120ms; /* @kind other */
+  --dur-base: 220ms; /* @kind other */
+  --dur-slow: 420ms; /* @kind other */
+
+  /* hairline rune-rule (used as <hr> / dividers) */
+  --rule: var(--border-hair) solid var(--border-1);
+}
+
+/* Reusable surface recipes via utility classes (optional helpers) */
+.tw-card {
+  background: var(--surface-card);
+  border: var(--border-hair) solid var(--border-1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* faint vertical stone-grain wash — apply to page shells for texture */
+.tw-stone-wash {
+  background-image:
+    linear-gradient(180deg, rgba(255,255,255,0.015), transparent 240px),
+    radial-gradient(140% 80% at 50% -10%, var(--accent-soft), transparent 60%);
+  background-attachment: fixed;
+}

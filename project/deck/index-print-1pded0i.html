@@ -1,0 +1,700 @@
+<!-- @dsCard group="Deck" viewport="1280x720" name="Brand Deck — Pages & Themes" subtitle="All pages across themes + UI elements" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<style data-omelette-print-defaults>
+@media print {
+  h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+  figure, table, pre, blockquote, img, svg, tr, [class~="card" i] { break-inside: avoid; }
+  img, svg { max-width: 100%; }
+  p { orphans: 3; widows: 3; }
+}
+</style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TriWizard — Pages & Themes</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  html, body { margin: 0; background: #000; }
+  deck-stage:not(:defined) { visibility: hidden; }
+  section { font-family: var(--font-serif); }
+  .pad { position: absolute; inset: 0; padding: 46px 56px 52px; display: flex; flex-direction: column; background: var(--surface-page); box-sizing: border-box; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 26px; flex-shrink: 0; }
+  .eyebrow { font-family: var(--font-mono); font-size: 17px; text-transform: uppercase; letter-spacing: 0.26em; color: var(--accent-text); margin-bottom: 12px; }
+  .title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 46px; letter-spacing: -0.01em; color: var(--text-1); line-height: 1.0; }
+  .chip { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px 9px 11px; border-radius: 999px; background: var(--surface-card); border: 1px solid var(--border-2); font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.06em; color: var(--text-2); white-space: nowrap; }
+  .chip-sw { width: 18px; height: 18px; border-radius: 50%; background: var(--surface-page); border: 1px solid rgba(255,255,255,0.18); box-shadow: inset -6px -6px 0 -3px var(--accent); }
+  .frame { flex: 1; min-height: 0; border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-lg); position: relative; }
+  .mount { position: absolute; inset: 0; }
+
+  /* cover + closing */
+  .cover { align-items: flex-start; justify-content: center; gap: 0; }
+  .rune { font-family: var(--font-display); font-size: 40px; color: var(--accent-text); letter-spacing: 0.4em; margin-bottom: 26px; }
+  .cover-mark { margin: 0; font-family: var(--font-display); font-weight: 900; font-size: 132px; letter-spacing: 0.04em; color: var(--text-1); line-height: 0.92; }
+  .cover-mark b { color: var(--accent-text); }
+  .cover-sub { font-family: var(--font-mono); font-size: 21px; text-transform: uppercase; letter-spacing: 0.34em; color: var(--text-3); margin-top: 22px; }
+  .cover-line { max-width: 30ch; font-family: var(--font-serif); font-size: 27px; line-height: 1.55; color: var(--text-2); margin: 40px 0 0; }
+  .cover-meta { margin-top: 48px; font-family: var(--font-mono); font-size: 16px; letter-spacing: 0.16em; color: var(--text-3); text-transform: uppercase; }
+  .close-mark { margin: 0; max-width: 22ch; font-family: var(--font-display); font-weight: 800; font-size: 78px; line-height: 1.04; color: var(--text-1); }
+  .close-mark { color: var(--text-1); }
+
+  /* overview */
+  .ov-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+  .ov-card { background: var(--surface-card); border: 1px solid var(--border-2); border-radius: 10px; padding: 30px; box-shadow: var(--shadow-md); }
+  .ov-rune { font-family: var(--font-display); font-size: 40px; color: var(--accent-text); margin-bottom: 18px; }
+  .ov-t { font-family: var(--font-display); font-weight: 700; font-size: 34px; color: var(--text-1); }
+  .ov-w { font-family: var(--font-mono); font-size: 15px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-3); margin: 8px 0 16px; }
+  .ov-d { font-family: var(--font-serif); font-size: 20px; line-height: 1.55; color: var(--text-2); }
+  .theme-row { display: flex; gap: 16px; margin-top: 34px; }
+  .theme-mini { flex: 1; display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 8px; background: var(--surface-card); border: 1px solid var(--border-2); }
+  .tm-sw { width: 26px; height: 26px; border-radius: 50%; background: var(--surface-page); border: 1px solid rgba(255,255,255,0.18); box-shadow: inset -9px -9px 0 -4px var(--accent); }
+  .tm-l { font-family: var(--font-mono); font-size: 16px; letter-spacing: 0.08em; color: var(--text-2); }
+
+  /* themes grid */
+  .themes-grid { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+  .tpanel { display: flex; flex-direction: column; gap: 14px; padding: 26px; border-radius: 12px; background: var(--surface-page); border: 1px solid var(--border-2); box-shadow: var(--shadow-md); }
+  .tp-name { font-family: var(--font-mono); font-size: 15px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-3); }
+  .tp-title { font-family: var(--font-display); font-weight: 800; font-size: 34px; color: var(--text-1); }
+  .tp-card { background: var(--surface-card); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 12px; }
+  .tp-chip { align-self: flex-start; font-family: var(--font-mono); font-size: 14px; padding: 4px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); }
+  .tp-line { height: 10px; border-radius: 4px; background: var(--border-2); }
+  .tp-line.short { width: 60%; }
+  .tp-btn { margin-top: auto; text-align: center; font-family: var(--font-ui); font-weight: 600; font-size: 19px; padding: 13px; border-radius: 6px; background: var(--accent); color: var(--accent-contrast); }
+</style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+
+    <section data-theme="dark" data-label="Cover">
+      <div class="pad cover">
+        <div class="rune">ᛏ&nbsp;&nbsp;ᛁ&nbsp;&nbsp;ᛜ</div>
+        <h1 class="cover-mark">TRI<b>WIZARD</b></h1>
+        <div class="cover-sub">Durmstrang · LARP &amp; TTRPG</div>
+        <p class="cover-line">Every page, every skin — how the keep looks across all three surfaces and five themes, with the shared element set that builds them.</p>
+        <div class="cover-meta">Design system review · Internal</div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Overview">
+      <div class="pad">
+        <div class="head"><div><div class="eyebrow">At a glance</div><h2 class="title">Three surfaces, five skins</h2></div></div>
+        <div class="ov-grid">
+          <div class="ov-card" data-theme="dark"><div class="ov-rune">ᚦ</div><div class="ov-t">Site</div><div class="ov-w">Open · no login</div><div class="ov-d">Dark Scandinavian academy with folklore. Dark &amp; light, blood accent.</div></div><div class="ov-card" data-theme="dark"><div class="ov-rune">ᛟ</div><div class="ov-t">LARP Cabinet</div><div class="ov-w">Players &amp; masters</div><div class="ov-d">Data stored as cards, remarks everywhere, master tools. Dark &amp; light.</div></div><div class="ov-card" data-theme="ttrpg-violet"><div class="ov-rune">ᛜ</div><div class="ov-t">TTRPG Cabinet</div><div class="ov-w">Players &amp; masters</div><div class="ov-d">Folklore horror × dark academia. Dice, graphs, tables, chronicle.</div></div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-mini" data-theme="dark"><span class="tm-sw"></span><span class="tm-l">dark</span></div><div class="theme-mini" data-theme="light"><span class="tm-sw"></span><span class="tm-l">light</span></div><div class="theme-mini" data-theme="ttrpg-blue"><span class="tm-sw"></span><span class="tm-l">ttrpg-blue</span></div><div class="theme-mini" data-theme="ttrpg-violet"><span class="tm-sw"></span><span class="tm-l">ttrpg-violet</span></div><div class="theme-mini" data-theme="ttrpg-light"><span class="tm-sw"></span><span class="tm-l">ttrpg-light</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Themes">
+      <div class="pad">
+        <div class="head"><div><div class="eyebrow">The five skins</div><h2 class="title">One structure, re-coloured</h2></div></div>
+        <div class="themes-grid">
+          <div class="tpanel" data-theme="dark"><div class="tp-name">dark</div><div class="tp-title">Keep</div><div class="tp-card"><span class="tp-chip">Site · LARP</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Enter</div></div><div class="tpanel" data-theme="light"><div class="tp-name">light</div><div class="tp-title">Keep</div><div class="tp-card"><span class="tp-chip">Site · LARP</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Enter</div></div><div class="tpanel" data-theme="ttrpg-blue"><div class="tp-name">ttrpg-blue</div><div class="tp-title">Drowned</div><div class="tp-card"><span class="tp-chip">TTRPG</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Roll</div></div><div class="tpanel" data-theme="ttrpg-violet"><div class="tp-name">ttrpg-violet</div><div class="tp-title">Folklore</div><div class="tp-card"><span class="tp-chip">TTRPG</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Roll</div></div><div class="tpanel" data-theme="ttrpg-light"><div class="tp-name">ttrpg-light</div><div class="tp-title">Folklore</div><div class="tp-card"><span class="tp-chip">TTRPG</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Roll</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Keep — Landing">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Keep — Landing</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-landing"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Keep — Landing (Light)">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Keep — Landing (Light)</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-landing"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Rite — Reading View">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Rite — Reading View</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-rules"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Order — Masters">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Order — Masters</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-order"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Cohort Roster">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Player Cabinet</div>
+            <h2 class="title">Cohort Roster</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-roster"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Character Sheet & Assessment">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Player Cabinet</div>
+            <h2 class="title">Character Sheet & Assessment</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-sheet"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Player Manager">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Master Cabinet</div>
+            <h2 class="title">Player Manager</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-manage"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Text Manager">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Master Cabinet</div>
+            <h2 class="title">Text Manager</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-texts"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Player Card">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Player Card</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-violet"><span class="chip-sw"></span>Violet · ttrpg-violet</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-violet" data-screen="ttrpg-card"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Player Card (Blue Skin)">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Player Card (Blue Skin)</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-blue"><span class="chip-sw"></span>Blue · ttrpg-blue</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-blue" data-screen="ttrpg-card"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Dice Tray">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">The Dice Tray</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-violet"><span class="chip-sw"></span>Violet · ttrpg-violet</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-violet" data-screen="ttrpg-dice"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Saga Graphs">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Saga Graphs</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-blue"><span class="chip-sw"></span>Blue · ttrpg-blue</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-blue" data-screen="ttrpg-graphs"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Reference Tables">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Reference Tables</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-light"><span class="chip-sw"></span>Light · ttrpg-light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-light" data-screen="ttrpg-tables"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Chronicle">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">The Chronicle</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-violet"><span class="chip-sw"></span>Violet · ttrpg-violet</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-violet" data-screen="ttrpg-chron"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Master Screen">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Master</div>
+            <h2 class="title">Master Screen</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-blue"><span class="chip-sw"></span>Blue · ttrpg-blue</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-blue" data-screen="ttrpg-master"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="UI Elements — Dark">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">Library</div>
+            <h2 class="title">UI Elements — Dark</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="elements"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="UI Elements — Light Skin">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">Library</div>
+            <h2 class="title">UI Elements — Light Skin</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-light"><span class="chip-sw"></span>Light · ttrpg-light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-light" data-screen="elements"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Close">
+      <div class="pad cover">
+        <div class="rune">ᛏ</div>
+        <h1 class="close-mark">What the keep records, the saga keeps.</h1>
+        <div class="cover-meta">TriWizard Design System · ask for any screen in depth</div>
+      </div>
+    </section>
+  </deck-stage>
+
+  <script src="../_ds_bundle.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="../ui_kits/larp_site/Site.jsx"></script>
+  <script type="text/babel" src="../ui_kits/larp_cabinet/Cabinet.jsx"></script>
+  <script type="text/babel" src="../ui_kits/ttrpg_cabinet/Table.jsx"></script>
+  <script type="text/babel" src="./Deck.jsx"></script>
+  <script type="text/babel" src="./Elements.jsx"></script>
+  <script type="text/babel">
+    function ready(){ return window.Deck && window.DeckElements && window.LarpSite && window.LarpCabinet && window.TtrpgCabinet && window.TriWizardDesignSystem_a98f10; }
+    function mountAll(){
+      if(!ready()){ return setTimeout(mountAll, 50); }
+      document.querySelectorAll('[data-screen]').forEach((el)=>{
+        const key = el.getAttribute('data-screen');
+        const node = key === 'elements' ? React.createElement(window.DeckElements.Gallery) : window.Deck.getScreen(key);
+        ReactDOM.createRoot(el).render(node);
+      });
+    }
+    mountAll();
+  </script>
+  <script src="./deck-stage.js"></script>
+<script>
+(async () => {
+  if (!document.title || !document.title.trim()) document.title = "index";
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    print-color-adjust: exact; -webkit-print-color-adjust: exact;\n    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  // Project support.js may predate runtime default-seeding; push via bridge.
+  if (isDc && window.__dcSetProps && window.__dcRootName) {
+    try {
+      const dpEl = document.querySelector('script[data-dc-script]');
+      const meta = JSON.parse((dpEl && dpEl.getAttribute('data-props')) || '{}');
+      const bag = {};
+      for (const k in meta)
+        if (k[0] !== '$' && meta[k] && meta[k].default !== undefined)
+          bag[k] = meta[k].default;
+      if (Object.keys(bag).length) {
+        window.__dcSetProps(window.__dcRootName(), bag);
+        await new Promise((r) => setTimeout(r, 50));
+      }
+    } catch (e) {}
+  }
+  // Reveal content gated on scroll or visibility before printing. Lazy <img>,
+  // IntersectionObserver fade-ins, and collapsed <details> don't render while
+  // off-screen, so a long page would print with them blank or closed. Open
+  // every <details>, force native-lazy images eager, and scroll the document
+  // through its full height to trip lazy-load + IO; then wait (bounded) for the
+  // newly-triggered images. Inert for deck-stage (slides aren't scroll-gated).
+  try {
+    for (const d of document.querySelectorAll('details')) d.open = true;
+    for (const img of document.querySelectorAll('img[loading="lazy"]'))
+      img.loading = 'eager';
+    const scroller = document.scrollingElement || document.documentElement;
+    const full = Math.max(scroller.scrollHeight, document.body.scrollHeight);
+    const step = window.innerHeight || 800;
+    for (let y = 0; y <= full; y += step) {
+      window.scrollTo(0, y);
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    window.scrollTo(0, 0);
+    await Promise.race([
+      Promise.all(
+        [...document.images].map((img) =>
+          img.complete
+            ? null
+            : new Promise((res) => {
+                img.addEventListener('load', res, { once: true });
+                img.addEventListener('error', res, { once: true });
+              })
+        )
+      ),
+      new Promise((r) => setTimeout(r, 4000)),
+    ]);
+  } catch (e) {}
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  // Re-append deck-stage's @page last so no author @page can add a margin and
+  // spill each full-bleed slide onto two sheets. Backstop for old copies.
+  if (ds) {
+    let pg = document.getElementById('deck-stage-print-page');
+    if (!pg) {
+      pg = document.createElement('style');
+      pg.textContent = '@page{size:' + (+ds.getAttribute('width') || 1920) +
+        'px ' + (+ds.getAttribute('height') || 1080) + 'px;margin:0}';
+    }
+    document.body.appendChild(pg);
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  // Size the PDF page to the rendered design unless the file opted into
+  // standard paper via @page{size:letter|A4|…}. Decks own their own @page.
+  // Wrappers (body, …) lose padding+margin so the frame sits at (0,0); the
+  // frame itself loses only margin — its padding is INSIDE the measured
+  // rect and must stay, or content shifts and leaves a gap at bottom/right.
+  var __m = null;
+  try { __m = (() => {
+  var docEl = document.documentElement;
+  var doc = { width: docEl.scrollWidth, height: docEl.scrollHeight };
+
+  var ds = document.querySelector('deck-stage');
+  if (ds) {
+    var dw = Number(ds.getAttribute('width')) || 1920;
+    var dh = Number(ds.getAttribute('height')) || 1080;
+    var n = typeof ds.length === 'number' ? ds.length : ds.children.length;
+    var idx = typeof ds.index === 'number' ? ds.index : 0;
+    var frames = [];
+    for (var i = 0; i < n; i++) frames.push({ left: 0, top: 0, width: dw, height: dh });
+    return { kind: 'deck', doc: doc, frames: frames,
+      authored: frames.map(function(){return{width:true,height:true}}),
+      deck: { width: dw, height: dh, slideCount: n, index: idx },
+      signals: { paperPage: false, pxPage: false } };
+  }
+
+  var paperPage = false, pxPage = false;
+  var eachRule = function (fn) {
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      var rs; try { rs = document.styleSheets[s].cssRules; } catch (e) { continue; }
+      for (var r = 0; r < rs.length; r++) {
+        fn(rs[r]);
+        if (rs[r].cssRules) for (var n = 0; n < rs[r].cssRules.length; n++) fn(rs[r].cssRules[n]);
+      }
+    }
+  };
+  eachRule(function (r) {
+    if (r.type !== 6) return;
+    var m = /\bsize\s*:\s*([^;}]+)/i.exec(r.cssText || '');
+    if (!m) return;
+    if (/\b(letter|a[3-5]|legal|ledger)\b/i.test(m[1])) paperPage = true;
+    if (/\d+(?:\.\d+)?px\b/i.test(m[1])) pxPage = true;
+  });
+  var signals = { paperPage: paperPage, pxPage: pxPage };
+
+  var pxVal = function (v) {
+    var m = /^(\d+(?:\.\d+)?)px$/.exec(v || ''); return m ? +m[1] : 0;
+  };
+  var authoredPx = function (el, prop) {
+    if (pxVal(el.style[prop])) return true;
+    var attr = el.getAttribute(prop);
+    if (attr && /^\d+$/.test(attr)) return true;
+    var hit = false;
+    eachRule(function (r) {
+      if (hit || r.type !== 1 || !r.style) return;
+      try { if (el.matches(r.selectorText) && pxVal(r.style[prop])) hit = true; } catch (e) {}
+    });
+    return hit;
+  };
+
+  var el = document.body, rootPxW = false;
+  for (;;) {
+    var kids = [];
+    for (var c = 0; c < el.children.length; c++) {
+      var t = el.children[c].tagName;
+      if (t !== 'SCRIPT' && t !== 'STYLE' && t !== 'TEMPLATE') kids.push(el.children[c]);
+    }
+    if (kids.length !== 1 || !(kids[0] instanceof HTMLElement)) break;
+    el.setAttribute('data-om-frame-wrap', '');
+    el = kids[0];
+    rootPxW = authoredPx(el, 'width');
+    if (rootPxW) break;
+  }
+  if (!rootPxW) rootPxW = authoredPx(el, 'width');
+
+  // @page{size:letter} alone is a flowing doc; with a px-width root it's a
+  // fixed sheet pretending to be paper — fall through and size to render.
+  if (paperPage && !rootPxW) {
+    return { kind: 'paper-doc', doc: doc, signals: signals,
+      frames: [{ left: 0, top: 0, width: doc.width, height: doc.height }],
+      authored: [{ width: false, height: false }] };
+  }
+
+  var sx = window.scrollX || 0, sy = window.scrollY || 0;
+  var rectOf = function (e) {
+    var r = e.getBoundingClientRect();
+    var oy; try { oy = getComputedStyle(e).overflowY; } catch (err) {}
+    var h = oy === 'visible' ? Math.max(r.height, e.scrollHeight || 0) : r.height;
+    return { left: r.left + sx, top: r.top + sy, width: r.width, height: h };
+  };
+
+  // Multi-frame: ≥2 visible non-fixed children, each with authored px width
+  // AND height, all within ±2px of each other. Off unless the page opts in
+  // via data-om-multi-frame on the stop element — guards against card grids
+  // and pricing tables that match the geometry but aren't separate canvases.
+  if (el.hasAttribute('data-om-multi-frame')) {
+    var cands = [];
+    for (var k = 0; k < el.children.length; k++) {
+      var ch = el.children[k];
+      var cs; try { cs = getComputedStyle(ch); } catch (e) { continue; }
+      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') continue;
+      var rc = rectOf(ch);
+      if (rc.width < 2 || rc.height < 2) continue;
+      if (!authoredPx(ch, 'width') || !authoredPx(ch, 'height')) continue;
+      cands.push(rc);
+    }
+    if (cands.length >= 2) {
+      var w0 = cands[0].width, h0 = cands[0].height, ok = true;
+      for (var q = 1; q < cands.length; q++)
+        if (Math.abs(cands[q].width - w0) > 2 || Math.abs(cands[q].height - h0) > 2) ok = false;
+      if (ok) return { kind: 'multi-frame', doc: doc, signals: signals,
+        frames: cands, authored: cands.map(function(){return{width:true,height:true}}) };
+    }
+  }
+
+  el.setAttribute('data-om-frame', '');
+  return { kind: 'single-canvas', doc: doc, signals: signals,
+    frames: [rectOf(el)],
+    authored: [{ width: rootPxW, height: authoredPx(el, 'height') }] };
+})(); } catch (e) {}
+  var frame = null;
+  if (__m && __m.kind === 'single-canvas') {
+    var f = __m.frames && __m.frames[0];
+    if (f && f.width >= 200 && f.height >= 200) {
+      frame = f;
+      var fst = document.createElement('style');
+      fst.textContent = '@media print{@page{size:' + Math.ceil(f.width) + 'px ' +
+        Math.ceil(f.height) + 'px;margin:0}' +
+        'html,body,[data-om-frame-wrap]{padding:0!important;margin:0!important;background:none!important}' +
+        '[data-om-frame]{margin:0!important}}';
+      document.body.appendChild(fst);
+    }
+  }
+  // Relax break-inside on oversized elements. An element taller than a
+  // printable page can't honor break-inside: avoid — browsers either overflow
+  // it or push it whole to the next page, leaving a blank gap, then break it
+  // anyway at an arbitrary point. After the final layout (content revealed,
+  // animations jumped), find elements taller than a page that still compute
+  // break-inside: avoid and reset them to auto, so the browser breaks them at
+  // their children's boundaries instead (children keep their own avoid). PAGE_PX
+  // is a conservative portrait estimate at 96 CSS px/in — Letter/A4 usable
+  // height minus our 0.5in margins — so only clearly-oversized elements are
+  // touched and under-page elements still stay whole. Skipped for decks (slides
+  // are sized to the page) and for fixed-size canvases (frame set, or an author
+  // px-based @page) — runs as before for flowing docs on letter/A4.
+  try {
+    if (!ds && !frame && !(__m && __m.signals && __m.signals.pxPage)) {
+      const PAGE_PX = 1024;
+      // Our print defaults add a real @page margin only when the source has
+      // no @page of its own; computed style can't tell us (it reports screen
+      // media), so read the injected rule directly.
+      const defaults = document.querySelector('style[data-omelette-print-defaults]');
+      const pageInset = /@page\s*\{[^}]*margin/.test(defaults ? defaults.textContent || '' : '');
+      const SEL = 'section,article,figure,table,pre,blockquote,[class~="card" i],[class~="page" i],[class~="sheet" i]';
+      for (const el of document.body.querySelectorAll(SEL)) {
+        if (el instanceof HTMLElement && el.offsetHeight > PAGE_PX) {
+          el.setAttribute('data-om-oversized', '');
+          // Fake-paged docs simulate sheets with over-tall break-after:page
+          // boxes; honoring the break spills half-blank pages and ends a
+          // colored box mid-sheet. Flow them, and (only when we own the page
+          // inset) drop the redundant padding/background via the rule below.
+          const cs = getComputedStyle(el);
+          if (cs.breakAfter === 'page' || cs.pageBreakAfter === 'always') {
+            el.setAttribute('data-om-fakepage', '');
+          }
+        }
+      }
+      const ost = document.createElement('style');
+      ost.textContent = '@media print{' +
+        '[data-om-oversized]{break-inside:auto !important;page-break-inside:auto !important}' +
+        '[data-om-fakepage]{break-after:auto !important;page-break-after:auto !important}' +
+        (pageInset ? '[data-om-fakepage]{padding:0 !important;background:none !important}' : '') +
+        '}';
+      document.head.appendChild(ost);
+    }
+  } catch (e) {}
+  // macOS Preview renders Skia-PDF Luminosity soft-masks as opaque grey boxes;
+  // swap the CSS that triggers them for Preview-safe forms.
+  try {
+    for (const el of document.body.querySelectorAll('*')) {
+      const cs = getComputedStyle(el);
+
+      if (cs.boxShadow !== 'none' && cs.filter === 'none') {
+        const outs = [], kept = [];
+        for (const s of cs.boxShadow.split(/,(?![^(]*[)])/)) {
+          const t = s.trim();
+          const m = t.match(/^(rgba?[(][^)]+[)]) (-?[0-9.]+px) (-?[0-9.]+px) ([0-9.]+px) -?[0-9.]+px$/);
+          if (m && parseFloat(m[4]) > 0) outs.push('drop-shadow(' + m[2] + ' ' + m[3] + ' ' + m[4] + ' ' + m[1] + ')');
+          else kept.push(t);
+        }
+        if (outs.length) {
+          el.style.setProperty('filter', outs.join(' '), 'important');
+          el.style.setProperty('box-shadow', kept.join(', ') || 'none', 'important');
+        }
+      }
+
+      const mask = cs.maskImage && cs.maskImage !== 'none' ? cs.maskImage : cs.webkitMaskImage;
+      if (mask && mask !== 'none' && cs.filter === 'none') el.style.setProperty('filter', 'opacity(1)', 'important');
+    }
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

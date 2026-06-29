@@ -1,0 +1,26 @@
+<!-- @dsCard group="Colors" viewport="700x230" name="Themes — Five Skins" subtitle="dark · light · ttrpg-blue · ttrpg-violet · ttrpg-light" -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  html, body { margin: 0; }
+  body { padding: 22px 24px; background: #0B0A0F; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .panel { border-radius: var(--radius-md); border: 1px solid var(--border-1); background: var(--surface-page); padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 168px; }
+  .name { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-3); }
+  .title { font-family: var(--font-display); font-weight: 700; font-size: 17px; color: var(--text-1); line-height: 1.05; }
+  .card { background: var(--surface-card); border: 1px solid var(--border-2); border-radius: var(--radius-sm); padding: 8px; box-shadow: var(--shadow-md); }
+  .body { font-family: var(--font-serif); font-size: 11px; color: var(--text-2); line-height: 1.4; }
+  .btn { margin-top: auto; font-family: var(--font-ui); font-size: 11px; font-weight: 600; text-align: center; padding: 6px; border-radius: var(--radius-sm); background: var(--accent); color: var(--accent-contrast); }
+  .chip { display: inline-block; font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); }
+</style>
+</head>
+<body>
+  <div class="panel" data-theme="dark"><span class="name">dark</span><span class="title">Keep</span><div class="card"><span class="chip">Site · LARP</span></div><div class="btn">Enter</div></div>
+  <div class="panel" data-theme="light"><span class="name">light</span><span class="title">Keep</span><div class="card"><span class="chip">Site · LARP</span></div><div class="btn">Enter</div></div>
+  <div class="panel" data-theme="ttrpg-blue"><span class="name">ttrpg-blue</span><span class="title">Drowned</span><div class="card"><span class="chip">TTRPG</span></div><div class="btn">Roll</div></div>
+  <div class="panel" data-theme="ttrpg-violet"><span class="name">ttrpg-violet</span><span class="title">Folklore</span><div class="card"><span class="chip">TTRPG</span></div><div class="btn">Roll</div></div>
+  <div class="panel" data-theme="ttrpg-light"><span class="name">ttrpg-light</span><span class="title">Folklore</span><div class="card"><span class="chip">TTRPG</span></div><div class="btn">Roll</div></div>
+</body>
+</html>

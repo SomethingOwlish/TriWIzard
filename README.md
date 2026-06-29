@@ -1,60 +1,73 @@
 # TriWizard
 
-A community web app for a tabletop group, combining a **public site**, a **LARP cabinet**, and a **TTRPG cabinet** — built to run entirely on **free tiers** (GitHub Pages + Firebase + Imgur).
+> **Durmstrang LARP & TTRPG** — a Nordic dark-horror world where enrolment is survived, oaths are sworn at the threshold, and a ledger keeps every deed.
 
-> 📋 Full build plan and feature breakdown: **[BACKLOG.md](BACKLOG.md)**
+This repository is a runnable **React + Vite** application that implements the
+TriWizard design system across its three product surfaces. It was built from the
+Claude Design handoff bundle in [`project/`](./project) (the original HTML/CSS/JS
+prototypes, design tokens, and component sources — kept intact as the canonical
+design reference).
 
-## What it is
+## The three surfaces
 
-Three surfaces behind one account:
+| Surface | Who | Themes |
+|---|---|---|
+| **Site** (`src/kits/LarpSite.jsx`) | Everyone, no login — hero, lore, the Rite, the Order | `dark`, `light` |
+| **LARP cabinet** (`src/kits/LarpCabinet.jsx`) | Players & masters — roster, character sheet, assessment, comments, master tools | `dark`, `light` |
+| **TTRPG table** (`src/kits/TtrpgTable.jsx`) | Players & masters — player card, dice tray, saga graphs, reference tables, chronicle, master screen | `ttrpg-blue`, `ttrpg-violet`, `ttrpg-light` |
 
-- **Open Site** — public main / rules / lore / org-info / character-list pages, a Telegram link, and the cabinet login entry.
-- **LARP Cabinet** — Player / Master / Admin roles. Character pages, plot, per-player threads, graphs, rules, change logs, a page CMS, and a role-acceptance dashboard.
-- **TTRPG Cabinet** — Player / GM / Admin roles. PBtA-based character cards, a **live** scene module with dice roller, lore, chronology, rule helper, moves, and NPC storage.
+Move between surfaces with the in-world buttons: **Enter the Cabinet** / **The
+TTRPG table →** on the site, **To the Table →** in the LARP cabinet, **← To the
+Field** in the TTRPG table, and the sidebar wordmark to return to the public site.
+Each surface carries a **theme switcher**; the Site and LARP cabinet share one
+folklore-academy skin, the TTRPG table keeps its own.
 
-A user can hold **different roles in LARP vs TTRPG**. Admins can **switch roles without re-logging-in**.
-Everything is **save → publish** — except the **Scene module**, which updates live.
-
-## Tech stack
-
-| Concern | Choice |
-|---|---|
-| Frontend | React 18 + Vite + TypeScript |
-| Styling | Tailwind CSS |
-| Routing | HashRouter (GitHub Pages friendly) |
-| State | Zustand |
-| Database | Firebase Firestore |
-| Auth | Firebase Auth (Google + Email/Password) |
-| Images | Imgur API (anonymous Client-ID) |
-| Hosting | GitHub Pages (GitHub Actions deploy) |
-
-### Staying free — key design rules
-- **No Cloud Functions / Admin SDK** (those need the paid Blaze plan). All authorization is enforced by **Firestore Security Rules + client-side guards**.
-- **Roles are Firestore documents**, not Auth custom claims.
-- Reads/writes are minimized via the save→publish flow, caching, and pagination; only the Scene module uses realtime listeners.
-- One Firebase project serves both cabinets; cross-links use shared accounts.
-
-## Project status
-
-🚧 **Planning complete — implementation not started.** The repo currently contains the plan only. Work proceeds tier-by-tier (one chat session per tier) per [BACKLOG.md](BACKLOG.md), in order: **Foundation → TTRPG → LARP → Open Site → Hardening.**
-
-## Getting started (once Tier 0 lands)
+## Running it
 
 ```bash
 npm install
-cp .env.example .env   # fill Firebase config + Imgur Client-ID
-npm run dev
+npm run dev      # http://localhost:5173
+npm run build    # production bundle in dist/
+npm run preview  # serve the production build
 ```
 
-Environment variables (documented in `.env.example`):
-- `VITE_FIREBASE_*` — Firebase web config (public by design; security is in the Rules).
-- `VITE_IMGUR_CLIENT_ID` — Imgur anonymous upload client ID.
+## Project layout
 
-## Deployment
+```
+index.html              Vite entry
+src/
+  main.jsx              React mount
+  App.jsx               three-surface shell + theme ownership
+  styles/
+    global.css          app reset; @imports the token closure
+    tokens.css          design-system entry (@imports tokens/*)
+    tokens/             colors, typography, spacing, effects, fonts (5 themes)
+  components/            24 design-system primitives (core, forms, feedback,
+    index.js            navigation, domain) + a re-export barrel
+  kits/
+    LarpSite.jsx        public site
+    LarpCabinet.jsx     LARP player + master cabinet
+    TtrpgTable.jsx      TTRPG player + master table
+    icons.jsx           shared thin-stroke line icons
+project/                original Claude Design handoff bundle (design reference)
+  readme.md             full design guide — voice, visual foundations, iconography
+  HANDOFF.md            the original "read this first" handoff note
+```
 
-Pushing to the default branch triggers the GitHub Actions workflow that builds the Vite app and publishes it to GitHub Pages. Vite `base` is set to the repo name; the SPA uses hash routing so deep links resolve without a server.
+The components are used as authored in the handoff — they read styling from CSS
+custom properties only, so re-pointing `data-theme` on `<html>` re-skins the whole
+app. See [`project/readme.md`](./project/readme.md) for the design guide (content
+voice, color/type/spacing foundations, iconography).
 
-## Required inputs
+## Notes & caveats
 
-Before the relevant tier, the following are needed (see [BACKLOG.md §3](BACKLOG.md)):
-the Claude **design doc**, the Firebase project config, an Imgur Client-ID, the public **Notion** PBtA content, the Telegram chat URL, and the org-info content.
+- **Fonts are Google Fonts substitutes** (Cinzel, Spectral, JetBrains Mono),
+  loaded from the Google Fonts CDN via `src/styles/tokens/fonts.css`, with serif
+  fallbacks (Georgia / Times New Roman) so the app degrades gracefully offline.
+  This substitution is carried over from the design handoff — swap in licensed
+  brand faces when available.
+- **No brand logo or photography** was supplied; the wordmark is a typographic
+  lockup and page shells use the stone-grain texture rather than imagery.
+- Data on every screen is **illustrative sample content** — there is no backend;
+  the cabinets are interactive recreations (roster filtering, master mode, tabs,
+  dice rolling, comment posting, modals all work client-side).

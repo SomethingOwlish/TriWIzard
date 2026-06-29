@@ -1,0 +1,32 @@
+<!-- @dsCard group="Brand" viewport="700x230" name="Voice — How TriWizard Speaks" subtitle="Solemn, second-person, folkloric; never jokey" -->
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 26px 28px; background: var(--surface-page); display: flex; gap: 26px; }
+  .col { flex: 1; }
+  .h { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; margin: 0 0 10px; }
+  .yes .h { color: var(--status-alive); }
+  .no .h { color: var(--status-dead); }
+  p { font-family: var(--font-serif); font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 9px; }
+  .yes p { color: var(--text-1); }
+  .no p { color: var(--text-3); text-decoration: line-through; text-decoration-color: var(--status-dead); }
+</style>
+</head>
+<body>
+  <div class="col yes">
+    <p class="h">▲ In voice</p>
+    <p>“You arrive by sea, alone. The keep keeps a ledger of every oath.”</p>
+    <p>“The bones are cast. Read what the north has spoken.”</p>
+    <p>“Your character has fallen. The chronicle remembers them.”</p>
+  </div>
+  <div class="col no">
+    <p class="h">▼ Off voice</p>
+    <p>“Welcome aboard! 🎉 Ready to start your epic journey?”</p>
+    <p>“Oops! Looks like your dice roll didn't go so well 😅”</p>
+    <p>“Character deleted successfully.”</p>
+  </div>
+</body>
+</html>

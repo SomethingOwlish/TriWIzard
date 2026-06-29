@@ -1,0 +1,258 @@
+/* TriWizard — Color System
+   ------------------------------------------------------------------
+   Model: a fixed PALETTE (cold stone, bone, blood, ember, ice, violet)
+   plus SEMANTIC tokens that every component reads. Themes are applied
+   via [data-theme="…"] on a wrapper and only re-point the semantics.
+
+   Themes:
+     dark          site / LARP — default, old dark stone + blood
+     light         site / LARP — bone parchment + blood
+     ttrpg-blue    TTRPG — cold drowned-blue, dark
+     ttrpg-violet  TTRPG — folklore violet, dark
+     ttrpg-light   TTRPG — full light, violet ink
+   ------------------------------------------------------------------ */
+
+:root {
+  /* ---- raw palette: cold stone ---- */
+  --stone-950: #0B0A0F;
+  --stone-900: #100F15;
+  --stone-850: #16151D;
+  --stone-800: #1C1B24;
+  --stone-750: #24232E;
+  --stone-700: #2D2C39;
+  --stone-650: #393846;
+  --stone-600: #494856;
+  --stone-500: #62616F;
+
+  /* ---- raw palette: bone / parchment ---- */
+  --bone-50:  #F6F1E4;
+  --bone-100: #ECE6D6;
+  --bone-200: #DCD5C1;
+  --bone-300: #C5BDA6;
+  --bone-400: #A39B84;
+  --bone-500: #837B66;
+
+  /* ---- raw palette: blood (primary accent) ---- */
+  --blood-700: #5E0F12;
+  --blood-600: #7C1418;
+  --blood-500: #9B1C1C;
+  --blood-400: #BE2A26;
+  --blood-300: #DB4A3F;
+  --blood-200: #EE7A6C;
+
+  /* ---- raw palette: ember (aged brass / candle, secondary) ---- */
+  --ember-600: #8A6322;
+  --ember-500: #B0843A;
+  --ember-400: #C99A5B;
+  --ember-300: #E0BA80;
+
+  /* ---- raw palette: drowned blue (TTRPG) ---- */
+  --ice-600: #2C4F6E;
+  --ice-500: #3E78A8;
+  --ice-400: #5C9CCB;
+  --ice-300: #8BC2E6;
+
+  /* ---- raw palette: folklore violet (TTRPG) ---- */
+  --violet-600: #4A3478;
+  --violet-500: #6B4FB0;
+  --violet-400: #8C72CE;
+  --violet-300: #B49CE6;
+
+  /* ---- status ---- */
+  --moss-500:  #5B7A4E;   /* success / alive */
+  --rust-500:  #B5601F;   /* warning / wounded */
+  --crow-500:  #8A1F2A;   /* danger / dead */
+}
+
+/* ====================================================================
+   THEME: dark  (default — site / LARP)
+   ==================================================================== */
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface-page:    var(--stone-950);
+  --surface-sunken:  var(--stone-900);
+  --surface-card:    var(--stone-850);
+  --surface-raised:  var(--stone-800);
+  --surface-overlay: var(--stone-800);
+  --surface-inset:   var(--stone-900);
+
+  --text-1: var(--bone-100);   /* primary */
+  --text-2: var(--bone-300);   /* secondary */
+  --text-3: var(--bone-500);   /* muted / meta */
+  --text-on-accent: var(--bone-50);
+
+  --border-1: #2A2933;         /* hairline */
+  --border-2: #35343F;         /* defined */
+  --border-strong: #46454F;
+
+  --accent:        var(--blood-500);
+  --accent-hover:  var(--blood-400);
+  --accent-press:  var(--blood-600);
+  --accent-soft:   rgba(155, 28, 28, 0.16);
+  --accent-text:   var(--blood-300);   /* accent legible on dark */
+  --accent-contrast: var(--bone-50);
+
+  --accent-2:      var(--ember-400);   /* candle / rune highlight */
+  --accent-2-text: var(--ember-300);
+
+  --focus-ring: rgba(219, 74, 63, 0.55);
+  --shadow-rgb: 0, 0, 0;
+  --scrim: rgba(7, 6, 10, 0.78);
+}
+
+/* ====================================================================
+   THEME: light  (site / LARP — bone parchment + blood)
+   ==================================================================== */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --surface-page:    #E7DFCC;
+  --surface-sunken:  #DED5BF;
+  --surface-card:    #F2ECDC;
+  --surface-raised:  #F8F3E6;
+  --surface-overlay: #F8F3E6;
+  --surface-inset:   #E2D9C4;
+
+  --text-1: #1C1812;
+  --text-2: #423A2C;
+  --text-3: #756B57;
+  --text-on-accent: var(--bone-50);
+
+  --border-1: #D2C8B0;
+  --border-2: #C2B79C;
+  --border-strong: #A99C7E;
+
+  --accent:        var(--blood-600);
+  --accent-hover:  var(--blood-500);
+  --accent-press:  var(--blood-700);
+  --accent-soft:   rgba(124, 20, 24, 0.12);
+  --accent-text:   var(--blood-600);
+  --accent-contrast: var(--bone-50);
+
+  --accent-2:      var(--ember-600);
+  --accent-2-text: var(--ember-600);
+
+  --focus-ring: rgba(124, 20, 24, 0.45);
+  --shadow-rgb: 60, 48, 30;
+  --scrim: rgba(40, 32, 20, 0.50);
+}
+
+/* ====================================================================
+   THEME: ttrpg-blue  (drowned blue, dark)
+   ==================================================================== */
+[data-theme="ttrpg-blue"] {
+  color-scheme: dark;
+
+  --surface-page:    #080C12;
+  --surface-sunken:  #0C121B;
+  --surface-card:    #111824;
+  --surface-raised:  #16202F;
+  --surface-overlay: #16202F;
+  --surface-inset:   #0C121B;
+
+  --text-1: #DCE6F0;
+  --text-2: #A7BACE;
+  --text-3: #6C8199;
+  --text-on-accent: #061018;
+
+  --border-1: #1B2738;
+  --border-2: #243349;
+  --border-strong: #32465F;
+
+  --accent:        var(--ice-500);
+  --accent-hover:  var(--ice-400);
+  --accent-press:  var(--ice-600);
+  --accent-soft:   rgba(62, 120, 168, 0.18);
+  --accent-text:   var(--ice-300);
+  --accent-contrast: #061018;
+
+  --accent-2:      var(--ember-400);
+  --accent-2-text: var(--ember-300);
+
+  --focus-ring: rgba(92, 156, 203, 0.55);
+  --shadow-rgb: 0, 0, 0;
+  --scrim: rgba(4, 8, 14, 0.80);
+}
+
+/* ====================================================================
+   THEME: ttrpg-violet  (folklore violet, dark)
+   ==================================================================== */
+[data-theme="ttrpg-violet"] {
+  color-scheme: dark;
+
+  --surface-page:    #0B0813;
+  --surface-sunken:  #100B1B;
+  --surface-card:    #161025;
+  --surface-raised:  #1E1630;
+  --surface-overlay: #1E1630;
+  --surface-inset:   #100B1B;
+
+  --text-1: #E6DEF2;
+  --text-2: #BCAFD3;
+  --text-3: #847699;
+  --text-on-accent: #0C0716;
+
+  --border-1: #261C3B;
+  --border-2: #33274D;
+  --border-strong: #463663;
+
+  --accent:        var(--violet-500);
+  --accent-hover:  var(--violet-400);
+  --accent-press:  var(--violet-600);
+  --accent-soft:   rgba(107, 79, 176, 0.20);
+  --accent-text:   var(--violet-300);
+  --accent-contrast: #0C0716;
+
+  --accent-2:      var(--ember-400);
+  --accent-2-text: var(--ember-300);
+
+  --focus-ring: rgba(140, 114, 206, 0.55);
+  --shadow-rgb: 0, 0, 0;
+  --scrim: rgba(8, 5, 16, 0.80);
+}
+
+/* ====================================================================
+   THEME: ttrpg-light  (full light, violet ink)
+   ==================================================================== */
+[data-theme="ttrpg-light"] {
+  color-scheme: light;
+
+  --surface-page:    #ECE8F2;
+  --surface-sunken:  #E2DCEE;
+  --surface-card:    #F6F3FB;
+  --surface-raised:  #FBF9FE;
+  --surface-overlay: #FBF9FE;
+  --surface-inset:   #E5DFF0;
+
+  --text-1: #1A1626;
+  --text-2: #3D3554;
+  --text-3: #6E6485;
+  --text-on-accent: #FBF9FE;
+
+  --border-1: #D8D0E6;
+  --border-2: #C7BBDC;
+  --border-strong: #AB9CC6;
+
+  --accent:        var(--violet-600);
+  --accent-hover:  var(--violet-500);
+  --accent-press:  #3A2860;
+  --accent-soft:   rgba(74, 52, 120, 0.12);
+  --accent-text:   var(--violet-600);
+  --accent-contrast: #FBF9FE;
+
+  --accent-2:      var(--ice-600);
+  --accent-2-text: var(--ice-600);
+
+  --focus-ring: rgba(107, 79, 176, 0.45);
+  --shadow-rgb: 50, 38, 70;
+  --scrim: rgba(30, 22, 46, 0.45);
+}
+
+/* ---- status semantics (theme-agnostic) ---- */
+:root {
+  --status-alive:   var(--moss-500);
+  --status-wounded: var(--rust-500);
+  --status-dead:    var(--crow-500);
+}

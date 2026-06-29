@@ -1,0 +1,9 @@
+/* TriWizard — Webfonts
+   NOTE: No brand font files were supplied. These are Google Fonts substitutions
+   chosen to carry the Nordic dark-academia / folklore-horror voice:
+     - Cinzel        → monumental carved-stone display (Durmstrang fortress voice)
+     - Spectral      → screen-optimised serif for running text + UI (dark academia)
+     - JetBrains Mono → data, dice results, codes, ledgers (TTRPG instruments)
+   Replace with licensed brand faces when available. */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cinzel+Decorative:wght@400;700;900&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap');
