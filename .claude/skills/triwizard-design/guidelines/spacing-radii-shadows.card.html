@@ -1,0 +1,31 @@
+<!-- @dsCard group="Spacing" viewport="700x160" name="Radii & Shadows" subtitle="Cut-stone corners; deep cold shadows" -->
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 24px 28px; background: var(--surface-page); display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+  .col { display: flex; gap: 16px; }
+  .box { width: 58px; height: 58px; background: var(--surface-card); border: 1px solid var(--border-2); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 5px; }
+  .lbl { font-family: var(--font-mono); font-size: 9px; color: var(--text-3); }
+  .sep { width: 1px; align-self: stretch; background: var(--border-1); }
+</style>
+</head>
+<body>
+  <div class="col">
+    <div class="box" style="border-radius:2px"><span class="lbl">xs 2</span></div>
+    <div class="box" style="border-radius:3px"><span class="lbl">sm 3</span></div>
+    <div class="box" style="border-radius:5px"><span class="lbl">md 5</span></div>
+    <div class="box" style="border-radius:8px"><span class="lbl">lg 8</span></div>
+    <div class="box" style="border-radius:12px"><span class="lbl">xl 12</span></div>
+  </div>
+  <div class="sep"></div>
+  <div class="col">
+    <div class="box" style="border-radius:5px;box-shadow:var(--shadow-sm);border:none"><span class="lbl">sm</span></div>
+    <div class="box" style="border-radius:5px;box-shadow:var(--shadow-md);border:none"><span class="lbl">md</span></div>
+    <div class="box" style="border-radius:5px;box-shadow:var(--shadow-lg);border:none"><span class="lbl">lg</span></div>
+    <div class="box" style="border-radius:5px;box-shadow:var(--shadow-well)"><span class="lbl">well</span></div>
+  </div>
+</body>
+</html>

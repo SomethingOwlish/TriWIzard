@@ -1,0 +1,40 @@
+<!-- @dsCard group="Components" viewport="700x420" name="Forms — Inputs & Controls" subtitle="Field / Input / Textarea / Select / Checkbox / Radio / Switch" -->
+<!DOCTYPE html>
+<html data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  body { margin: 0; padding: 24px; background: var(--surface-page); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; align-items: start; }
+</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { Field, Input, Textarea, Select, Checkbox, RadioGroup, Switch } = window.TriWizardDesignSystem_a98f10;
+    function Demo() {
+      return (
+        <div className="grid">
+          <Field label="Character name" htmlFor="n"><Input id="n" defaultValue="Ivar the Drowned" /></Field>
+          <Field label="Homeland" htmlFor="h"><Select id="h" defaultValue="no"><option value="no">Norway</option><option value="se">Sweden</option><option value="bg">Bulgaria</option></Select></Field>
+          <Field label="Oath" error="An oath is required."><Input invalid placeholder="Speak it…" /></Field>
+          <Field label="Discipline">
+            <RadioGroup name="d" defaultValue="rune" direction="column" options={[{value:'rune',label:'Runecraft'},{value:'pyro',label:'Pyromancy'},{value:'necro',label:'Necromancy'}]} />
+          </Field>
+          <Field label="Backstory" htmlFor="b" style={{gridColumn:'1 / -1'}}><Textarea id="b" rows={2} defaultValue="Cast out by the southern academies, he sailed north…" /></Field>
+          <div style={{display:'flex',gap:24,alignItems:'center',gridColumn:'1 / -1'}}>
+            <Checkbox defaultChecked label="Bound by the Iron Oath" />
+            <Switch defaultChecked label="Master mode" />
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>);
+  </script>
+</body>
+</html>

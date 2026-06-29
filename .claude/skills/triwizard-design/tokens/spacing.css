@@ -1,0 +1,30 @@
+/* TriWizard — Spacing & Layout
+   8px base rhythm with a few fractional steps for dense ledger UI. */
+
+:root {
+  --space-0:  0;
+  --space-1:  0.25rem;  /* 4 */
+  --space-2:  0.5rem;   /* 8 */
+  --space-3:  0.75rem;  /* 12 */
+  --space-4:  1rem;     /* 16 */
+  --space-5:  1.5rem;   /* 24 */
+  --space-6:  2rem;     /* 32 */
+  --space-7:  3rem;     /* 48 */
+  --space-8:  4rem;     /* 64 */
+  --space-9:  6rem;     /* 96 */
+  --space-10: 8rem;     /* 128 */
+
+  /* container widths */
+  --width-prose: 68ch;     /* rules / lore reading column */
+  --width-content: 1080px; /* cabinets */
+  --width-wide: 1320px;    /* dashboards */
+
+  /* z-index ladder */
+  --z-base: 0; /* @kind other */
+  --z-raised: 10; /* @kind other */
+  --z-sticky: 100; /* @kind other */
+  --z-overlay: 1000; /* @kind other */
+  --z-modal: 1100; /* @kind other */
+  --z-toast: 1200; /* @kind other */
+  --z-tooltip: 1300; /* @kind other */
+}

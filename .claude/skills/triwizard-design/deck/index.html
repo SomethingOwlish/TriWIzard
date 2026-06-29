@@ -1,0 +1,344 @@
+<!-- @dsCard group="Deck" viewport="1280x720" name="Brand Deck — Pages & Themes" subtitle="All pages across themes + UI elements" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TriWizard — Pages & Themes</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  html, body { margin: 0; background: #000; }
+  deck-stage:not(:defined) { visibility: hidden; }
+  section { font-family: var(--font-serif); }
+  .pad { position: absolute; inset: 0; padding: 46px 56px 52px; display: flex; flex-direction: column; background: var(--surface-page); box-sizing: border-box; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 26px; flex-shrink: 0; }
+  .eyebrow { font-family: var(--font-mono); font-size: 17px; text-transform: uppercase; letter-spacing: 0.26em; color: var(--accent-text); margin-bottom: 12px; }
+  .title { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 46px; letter-spacing: -0.01em; color: var(--text-1); line-height: 1.0; }
+  .chip { display: inline-flex; align-items: center; gap: 10px; padding: 9px 16px 9px 11px; border-radius: 999px; background: var(--surface-card); border: 1px solid var(--border-2); font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.06em; color: var(--text-2); white-space: nowrap; }
+  .chip-sw { width: 18px; height: 18px; border-radius: 50%; background: var(--surface-page); border: 1px solid rgba(255,255,255,0.18); box-shadow: inset -6px -6px 0 -3px var(--accent); }
+  .frame { flex: 1; min-height: 0; border: 1px solid var(--border-strong); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-lg); position: relative; }
+  .mount { position: absolute; inset: 0; }
+
+  /* cover + closing */
+  .cover { align-items: flex-start; justify-content: center; gap: 0; }
+  .rune { font-family: var(--font-display); font-size: 40px; color: var(--accent-text); letter-spacing: 0.4em; margin-bottom: 26px; }
+  .cover-mark { margin: 0; font-family: var(--font-display); font-weight: 900; font-size: 132px; letter-spacing: 0.04em; color: var(--text-1); line-height: 0.92; }
+  .cover-mark b { color: var(--accent-text); }
+  .cover-sub { font-family: var(--font-mono); font-size: 21px; text-transform: uppercase; letter-spacing: 0.34em; color: var(--text-3); margin-top: 22px; }
+  .cover-line { max-width: 30ch; font-family: var(--font-serif); font-size: 27px; line-height: 1.55; color: var(--text-2); margin: 40px 0 0; }
+  .cover-meta { margin-top: 48px; font-family: var(--font-mono); font-size: 16px; letter-spacing: 0.16em; color: var(--text-3); text-transform: uppercase; }
+  .close-mark { margin: 0; max-width: 22ch; font-family: var(--font-display); font-weight: 800; font-size: 78px; line-height: 1.04; color: var(--text-1); }
+  .close-mark { color: var(--text-1); }
+
+  /* overview */
+  .ov-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+  .ov-card { background: var(--surface-card); border: 1px solid var(--border-2); border-radius: 10px; padding: 30px; box-shadow: var(--shadow-md); }
+  .ov-rune { font-family: var(--font-display); font-size: 40px; color: var(--accent-text); margin-bottom: 18px; }
+  .ov-t { font-family: var(--font-display); font-weight: 700; font-size: 34px; color: var(--text-1); }
+  .ov-w { font-family: var(--font-mono); font-size: 15px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-3); margin: 8px 0 16px; }
+  .ov-d { font-family: var(--font-serif); font-size: 20px; line-height: 1.55; color: var(--text-2); }
+  .theme-row { display: flex; gap: 16px; margin-top: 34px; }
+  .theme-mini { flex: 1; display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 8px; background: var(--surface-card); border: 1px solid var(--border-2); }
+  .tm-sw { width: 26px; height: 26px; border-radius: 50%; background: var(--surface-page); border: 1px solid rgba(255,255,255,0.18); box-shadow: inset -9px -9px 0 -4px var(--accent); }
+  .tm-l { font-family: var(--font-mono); font-size: 16px; letter-spacing: 0.08em; color: var(--text-2); }
+
+  /* themes grid */
+  .themes-grid { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+  .tpanel { display: flex; flex-direction: column; gap: 14px; padding: 26px; border-radius: 12px; background: var(--surface-page); border: 1px solid var(--border-2); box-shadow: var(--shadow-md); }
+  .tp-name { font-family: var(--font-mono); font-size: 15px; text-transform: uppercase; letter-spacing: 0.16em; color: var(--text-3); }
+  .tp-title { font-family: var(--font-display); font-weight: 800; font-size: 34px; color: var(--text-1); }
+  .tp-card { background: var(--surface-card); border: 1px solid var(--border-2); border-radius: 8px; padding: 16px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 12px; }
+  .tp-chip { align-self: flex-start; font-family: var(--font-mono); font-size: 14px; padding: 4px 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); }
+  .tp-line { height: 10px; border-radius: 4px; background: var(--border-2); }
+  .tp-line.short { width: 60%; }
+  .tp-btn { margin-top: auto; text-align: center; font-family: var(--font-ui); font-weight: 600; font-size: 19px; padding: 13px; border-radius: 6px; background: var(--accent); color: var(--accent-contrast); }
+</style>
+</head>
+<body>
+  <deck-stage width="1920" height="1080">
+
+    <section data-theme="dark" data-label="Cover">
+      <div class="pad cover">
+        <div class="rune">ᛏ&nbsp;&nbsp;ᛁ&nbsp;&nbsp;ᛜ</div>
+        <h1 class="cover-mark">TRI<b>WIZARD</b></h1>
+        <div class="cover-sub">Durmstrang · LARP &amp; TTRPG</div>
+        <p class="cover-line">Every page, every skin — how the keep looks across all three surfaces and five themes, with the shared element set that builds them.</p>
+        <div class="cover-meta">Design system review · Internal</div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Overview">
+      <div class="pad">
+        <div class="head"><div><div class="eyebrow">At a glance</div><h2 class="title">Three surfaces, five skins</h2></div></div>
+        <div class="ov-grid">
+          <div class="ov-card" data-theme="dark"><div class="ov-rune">ᚦ</div><div class="ov-t">Site</div><div class="ov-w">Open · no login</div><div class="ov-d">Dark Scandinavian academy with folklore. Dark &amp; light, blood accent.</div></div><div class="ov-card" data-theme="dark"><div class="ov-rune">ᛟ</div><div class="ov-t">LARP Cabinet</div><div class="ov-w">Players &amp; masters</div><div class="ov-d">Data stored as cards, remarks everywhere, master tools. Dark &amp; light.</div></div><div class="ov-card" data-theme="ttrpg-violet"><div class="ov-rune">ᛜ</div><div class="ov-t">TTRPG Cabinet</div><div class="ov-w">Players &amp; masters</div><div class="ov-d">Folklore horror × dark academia. Dice, graphs, tables, chronicle.</div></div>
+        </div>
+        <div class="theme-row">
+          <div class="theme-mini" data-theme="dark"><span class="tm-sw"></span><span class="tm-l">dark</span></div><div class="theme-mini" data-theme="light"><span class="tm-sw"></span><span class="tm-l">light</span></div><div class="theme-mini" data-theme="ttrpg-blue"><span class="tm-sw"></span><span class="tm-l">ttrpg-blue</span></div><div class="theme-mini" data-theme="ttrpg-violet"><span class="tm-sw"></span><span class="tm-l">ttrpg-violet</span></div><div class="theme-mini" data-theme="ttrpg-light"><span class="tm-sw"></span><span class="tm-l">ttrpg-light</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Themes">
+      <div class="pad">
+        <div class="head"><div><div class="eyebrow">The five skins</div><h2 class="title">One structure, re-coloured</h2></div></div>
+        <div class="themes-grid">
+          <div class="tpanel" data-theme="dark"><div class="tp-name">dark</div><div class="tp-title">Keep</div><div class="tp-card"><span class="tp-chip">Site · LARP</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Enter</div></div><div class="tpanel" data-theme="light"><div class="tp-name">light</div><div class="tp-title">Keep</div><div class="tp-card"><span class="tp-chip">Site · LARP</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Enter</div></div><div class="tpanel" data-theme="ttrpg-blue"><div class="tp-name">ttrpg-blue</div><div class="tp-title">Drowned</div><div class="tp-card"><span class="tp-chip">TTRPG</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Roll</div></div><div class="tpanel" data-theme="ttrpg-violet"><div class="tp-name">ttrpg-violet</div><div class="tp-title">Folklore</div><div class="tp-card"><span class="tp-chip">TTRPG</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Roll</div></div><div class="tpanel" data-theme="ttrpg-light"><div class="tp-name">ttrpg-light</div><div class="tp-title">Folklore</div><div class="tp-card"><span class="tp-chip">TTRPG</span><div class="tp-line"></div><div class="tp-line short"></div></div><div class="tp-btn">Roll</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Keep — Landing">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Keep — Landing</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-landing"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Keep — Landing (Light)">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Keep — Landing (Light)</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-landing"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Rite — Reading View">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Rite — Reading View</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-rules"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Order — Masters">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Public Site</div>
+            <h2 class="title">The Order — Masters</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-order"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Cohort Roster">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Player Cabinet</div>
+            <h2 class="title">Cohort Roster</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-roster"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Character Sheet & Assessment">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Player Cabinet</div>
+            <h2 class="title">Character Sheet & Assessment</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-sheet"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Player Manager">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Master Cabinet</div>
+            <h2 class="title">Player Manager</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="larp-manage"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Text Manager">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">LARP · Master Cabinet</div>
+            <h2 class="title">Text Manager</h2>
+          </div>
+          <span class="chip" data-theme="light"><span class="chip-sw"></span>Light · light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="light" data-screen="larp-texts"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Player Card">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Player Card</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-violet"><span class="chip-sw"></span>Violet · ttrpg-violet</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-violet" data-screen="ttrpg-card"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Player Card (Blue Skin)">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Player Card (Blue Skin)</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-blue"><span class="chip-sw"></span>Blue · ttrpg-blue</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-blue" data-screen="ttrpg-card"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Dice Tray">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">The Dice Tray</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-violet"><span class="chip-sw"></span>Violet · ttrpg-violet</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-violet" data-screen="ttrpg-dice"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Saga Graphs">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Saga Graphs</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-blue"><span class="chip-sw"></span>Blue · ttrpg-blue</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-blue" data-screen="ttrpg-graphs"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Reference Tables">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">Reference Tables</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-light"><span class="chip-sw"></span>Light · ttrpg-light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-light" data-screen="ttrpg-tables"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="The Chronicle">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Player</div>
+            <h2 class="title">The Chronicle</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-violet"><span class="chip-sw"></span>Violet · ttrpg-violet</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-violet" data-screen="ttrpg-chron"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Master Screen">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">TTRPG · Master</div>
+            <h2 class="title">Master Screen</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-blue"><span class="chip-sw"></span>Blue · ttrpg-blue</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-blue" data-screen="ttrpg-master"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="UI Elements — Dark">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">Library</div>
+            <h2 class="title">UI Elements — Dark</h2>
+          </div>
+          <span class="chip" data-theme="dark"><span class="chip-sw"></span>Dark · dark</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="dark" data-screen="elements"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="UI Elements — Light Skin">
+      <div class="pad">
+        <div class="head">
+          <div>
+            <div class="eyebrow">Library</div>
+            <h2 class="title">UI Elements — Light Skin</h2>
+          </div>
+          <span class="chip" data-theme="ttrpg-light"><span class="chip-sw"></span>Light · ttrpg-light</span>
+        </div>
+        <div class="frame"><div class="mount" data-theme="ttrpg-light" data-screen="elements"></div></div>
+      </div>
+    </section>
+
+    <section data-theme="dark" data-label="Close">
+      <div class="pad cover">
+        <div class="rune">ᛏ</div>
+        <h1 class="close-mark">What the keep records, the saga keeps.</h1>
+        <div class="cover-meta">TriWizard Design System · ask for any screen in depth</div>
+      </div>
+    </section>
+  </deck-stage>
+
+  <script src="../_ds_bundle.js"></script>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script type="text/babel" src="../ui_kits/larp_site/Site.jsx"></script>
+  <script type="text/babel" src="../ui_kits/larp_cabinet/Cabinet.jsx"></script>
+  <script type="text/babel" src="../ui_kits/ttrpg_cabinet/Table.jsx"></script>
+  <script type="text/babel" src="./Deck.jsx"></script>
+  <script type="text/babel" src="./Elements.jsx"></script>
+  <script type="text/babel">
+    function ready(){ return window.Deck && window.DeckElements && window.LarpSite && window.LarpCabinet && window.TtrpgCabinet && window.TriWizardDesignSystem_a98f10; }
+    function mountAll(){
+      if(!ready()){ return setTimeout(mountAll, 50); }
+      document.querySelectorAll('[data-screen]').forEach((el)=>{
+        const key = el.getAttribute('data-screen');
+        const node = key === 'elements' ? React.createElement(window.DeckElements.Gallery) : window.Deck.getScreen(key);
+        ReactDOM.createRoot(el).render(node);
+      });
+    }
+    mountAll();
+  </script>
+  <script src="./deck-stage.js"></script>
+</body>
+</html>
