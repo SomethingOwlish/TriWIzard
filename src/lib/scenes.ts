@@ -227,6 +227,13 @@ export async function deleteScene(id: string): Promise<void> {
 
 // ---- Rolls -----------------------------------------------------------------
 
+/** Drop undefined fields — Firestore rejects them (e.g. an absent `moveName`). */
+function clean(roll: LastRoll): LastRoll {
+  const out = {} as Record<string, unknown>;
+  for (const [k, v] of Object.entries(roll)) if (v !== undefined) out[k] = v;
+  return out as unknown as LastRoll;
+}
+
 /**
  * Record a roll: append it to the shared stream AND set it as the roller's live
  * last roll. The `lastRolls` write is the only one a player is permitted to make
@@ -234,12 +241,13 @@ export async function deleteScene(id: string): Promise<void> {
  */
 export async function recordRoll(roll: LastRoll, uid: string | null, sceneName: string): Promise<void> {
   if (!isFirebaseConfigured) throw new Error(SEALED);
+  const r = clean(roll);
   await addDoc(collection(db, ROLLS), {
-    app: 'ttrpg', ...roll, uid: uid ?? null, sceneName, createdAt: serverTimestamp(),
+    app: 'ttrpg', ...r, uid: uid ?? null, sceneName, createdAt: serverTimestamp(),
   });
   await setDoc(
     doc(db, TABLE, TABLE_ID),
-    { lastRolls: { [roll.key]: roll }, updatedAt: serverTimestamp() },
+    { lastRolls: { [r.key]: r }, updatedAt: serverTimestamp() },
     { merge: true },
   );
 }
