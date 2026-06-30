@@ -20,6 +20,16 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+/**
+ * True only when the web config is actually present. A credential-less build
+ * (CI without secrets, a fresh clone) must still compile and render, so the
+ * auth/role guards check this and show an in-world "the hall is sealed" notice
+ * instead of letting the SDK throw at call time. Fill `.env` to open the hall.
+ */
+export const isFirebaseConfigured: boolean = Boolean(
+  firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId,
+);
+
 export const app: FirebaseApp = initializeApp(firebaseConfig);
 export const db: Firestore = getFirestore(app);
 export const auth: Auth = getAuth(app);
