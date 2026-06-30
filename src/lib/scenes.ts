@@ -1,24 +1,19 @@
 /**
  * Scene data layer (B3.1 / B3.2) — the table's one *live* surface.
  *
- * The whole product is save→publish; the Scene is the single exception that
- * runs live. To keep the free Spark read budget intact (50K reads/day) the live
- * footprint is one tiny well-known document, `sceneTable/main`, that every viewer
- * at the table subscribes to with a single `onSnapshot`. It holds:
- *   - the active scene's meta (name / background / notes) and its NPC tokens,
- *   - the participants in play, each with a **scene-local** condition tracker
- *     pre-loaded from their card (never written back to the card),
- *   - the conflict turn order, and
- *   - `lastRolls` — each participant's most recent roll, the live roll board.
+ * The Scene is the single live exception to save→publish. The live footprint is
+ * one well-known document, `sceneTable/main`, that every viewer subscribes to
+ * with a single `onSnapshot`. It models a shared **2×2 wall of four slots**: the
+ * GM *raises* authored scenes into chosen slots (or fills the whole wall), so
+ * several scenes can stand at once. Each slot carries one image + text. The doc
+ * also holds the participants (with scene-local condition trackers), the NPC
+ * tokens of the raised scenes, and the conflict turn order.
  *
- * The GM authors a *library* of scenes in `scenes/{id}` (not live; players never
- * read them — only the activated copy mirrored into `sceneTable/main`). Every
- * roll is also appended to a flat, **single shared stream** `rolls/{id}` that the
- * log reads on demand (one getDocs), never live — so history costs nothing until
- * someone opens it.
- *
- * Write authority: the GM owns `sceneTable/main`; a player may only touch
- * `lastRolls` (their own roll), enforced in firestore.rules.
+ * Rolls are NOT kept on the live table — a player only ever creates a doc in the
+ * shared, append-only `rolls/{id}` stream (the live roll board is derived from a
+ * small live query over it, and the deeper log is fetched on demand). This keeps
+ * the write surface tiny and the rules simple: the GM owns sceneTable/main, and
+ * any member may append their own roll.
  */
 import {
   addDoc,
@@ -44,6 +39,10 @@ const TABLE = 'sceneTable';
 const TABLE_ID = 'main';
 const SEALED = 'The hall is dark — no firebase config is set.';
 
+/** The four wall slots, plus the whole-wall option. */
+export const SLOT_COUNT = 4;
+export type SlotTarget = 0 | 1 | 2 | 3 | 'full';
+
 // ---- NPCs ------------------------------------------------------------------
 
 export interface SceneNpc {
@@ -52,53 +51,41 @@ export interface SceneNpc {
   note: string;
   /** Shown to players, or kept behind the screen (soft hide — UI only). */
   shown: boolean;
+  /** The raised scene this token came from, so deactivating it cleans up. */
+  src?: string;
 }
 
 // ---- Authored scene (the GM's library) -------------------------------------
-
-/** How many content frames the scene shows, laid out in a 2×2 grid. */
-export type SceneLayout = 1 | 2 | 4;
-
-/** A content panel — shows its image as a cover background if set, else its text. */
-export interface SceneFrame {
-  id: string;
-  image: string;
-  text: string;
-}
-
-function fid(): string {
-  return Math.random().toString(36).slice(2, 9);
-}
-
-export function newFrame(): SceneFrame {
-  return { id: fid(), image: '', text: '' };
-}
-
-/** Pad/trim a frame list to exactly `n` frames. */
-export function fitFrames(frames: SceneFrame[], n: SceneLayout): SceneFrame[] {
-  const out = frames.slice(0, n);
-  while (out.length < n) out.push(newFrame());
-  return out;
-}
 
 export interface AuthoredScene {
   id: string;
   app: 'ttrpg';
   name: string;
+  /** Image URL — shown as the slot's cover background when set. */
+  image: string;
+  /** Falls back to text when no image is set (or as a caption over the image). */
+  text: string;
+  /** Behind the screen — never shown to players. */
   notes: string;
-  /** 1, 2 or 4 — how many of `frames` show, in a 2×2 grid. */
-  layout: SceneLayout;
-  /** Content panels; each renders its image (cover) or, failing that, its text. */
-  frames: SceneFrame[];
   npcs: SceneNpc[];
   createdAt?: number;
   updatedAt?: number;
 }
 
-export type SceneInput = Pick<AuthoredScene, 'name' | 'notes' | 'layout' | 'frames' | 'npcs'>;
+export type SceneInput = Pick<AuthoredScene, 'name' | 'image' | 'text' | 'notes' | 'npcs'>;
 
 export function blankScene(): SceneInput {
-  return { name: '', notes: '', layout: 1, frames: [newFrame()], npcs: [] };
+  return { name: '', image: '', text: '', notes: '', npcs: [] };
+}
+
+// ---- Live wall: slots ------------------------------------------------------
+
+/** A scene pinned to a slot — denormalised so players read only the live doc. */
+export interface ActiveSlot {
+  sceneId: string;
+  name: string;
+  image: string;
+  text: string;
 }
 
 // ---- Live participants + rolls ---------------------------------------------
@@ -107,7 +94,6 @@ export interface SceneParticipant {
   /** Stable key — the character id for a PC, an invented id for an NPC. */
   key: string;
   kind: 'pc' | 'npc';
-  /** PC link back to `characters/{id}`. */
   charId?: string;
   /** The owning account, so a player may roll only as their own character. */
   uid?: string;
@@ -125,7 +111,6 @@ export interface SceneParticipant {
 export interface LastRoll {
   key: string;
   name: string;
-  /** e.g. "2d6 +1 · Magic" */
   label: string;
   moveName?: string;
   stat?: StatKey | null;
@@ -139,19 +124,19 @@ export interface LastRoll {
 }
 
 export interface TurnState {
-  /** Participant keys in initiative order (highest first). */
   order: string[];
   actingIndex: number;
   round: number;
 }
 
 export interface SceneTable {
-  activeSceneId: string | null;
-  scene: { name: string; notes: string; layout: SceneLayout; frames: SceneFrame[] } | null;
+  /** Four wall slots (the 2×2). A null slot is empty. */
+  slots: (ActiveSlot | null)[];
+  /** When set, one scene fills the whole wall, overriding the slots. */
+  full: ActiveSlot | null;
   npcs: SceneNpc[];
   participants: SceneParticipant[];
   turn: TurnState | null;
-  lastRolls: Record<string, LastRoll>;
   updatedAt?: number;
 }
 
@@ -163,7 +148,7 @@ export interface RollEntry extends LastRoll {
 }
 
 const EMPTY_TABLE: SceneTable = {
-  activeSceneId: null, scene: null, npcs: [], participants: [], turn: null, lastRolls: {},
+  slots: [null, null, null, null], full: null, npcs: [], participants: [], turn: null,
 };
 
 function toScene(id: string, data: Record<string, unknown>): AuthoredScene {
@@ -171,9 +156,9 @@ function toScene(id: string, data: Record<string, unknown>): AuthoredScene {
     id,
     app: 'ttrpg',
     name: (data.name as string) ?? '',
+    image: (data.image as string) ?? '',
+    text: (data.text as string) ?? '',
     notes: (data.notes as string) ?? '',
-    layout: (data.layout as SceneLayout) ?? 1,
-    frames: (data.frames as SceneFrame[]) ?? [],
     npcs: (data.npcs as SceneNpc[]) ?? [],
     createdAt: data.createdAt as number | undefined,
     updatedAt: data.updatedAt as number | undefined,
@@ -181,21 +166,21 @@ function toScene(id: string, data: Record<string, unknown>): AuthoredScene {
 }
 
 function toTable(data: Record<string, unknown> | undefined): SceneTable {
-  if (!data) return { ...EMPTY_TABLE };
+  if (!data) return { slots: [null, null, null, null], full: null, npcs: [], participants: [], turn: null };
+  const slots = (data.slots as (ActiveSlot | null)[]) ?? [null, null, null, null];
+  while (slots.length < SLOT_COUNT) slots.push(null);
   return {
-    activeSceneId: (data.activeSceneId as string | null) ?? null,
-    scene: (data.scene as SceneTable['scene']) ?? null,
+    slots: slots.slice(0, SLOT_COUNT),
+    full: (data.full as ActiveSlot | null) ?? null,
     npcs: (data.npcs as SceneNpc[]) ?? [],
     participants: (data.participants as SceneParticipant[]) ?? [],
     turn: (data.turn as TurnState | null) ?? null,
-    lastRolls: (data.lastRolls as Record<string, LastRoll>) ?? {},
     updatedAt: data.updatedAt as number | undefined,
   };
 }
 
 // ---- The live table (everyone at the table) --------------------------------
 
-/** Subscribe to the one live document. Returns an unsubscribe fn. */
 export function watchSceneTable(cb: (t: SceneTable) => void): () => void {
   if (!isFirebaseConfigured) {
     cb({ ...EMPTY_TABLE });
@@ -208,19 +193,10 @@ export function watchSceneTable(cb: (t: SceneTable) => void): () => void {
   );
 }
 
-/** GM write to the live table (scene/npcs/participants/turn/activeSceneId). */
+/** GM write to the live table (slots/full/npcs/participants/turn). */
 export async function updateTable(patch: Partial<SceneTable>): Promise<void> {
   if (!isFirebaseConfigured) throw new Error(SEALED);
   await setDoc(doc(db, TABLE, TABLE_ID), { ...patch, updatedAt: serverTimestamp() }, { merge: true });
-}
-
-/** GM: make an authored scene the active one, mirroring its meta + NPCs live. */
-export async function activateScene(scene: AuthoredScene): Promise<void> {
-  await updateTable({
-    activeSceneId: scene.id,
-    scene: { name: scene.name, notes: scene.notes, layout: scene.layout, frames: scene.frames },
-    npcs: scene.npcs,
-  });
 }
 
 // ---- The GM's scene library ------------------------------------------------
@@ -266,47 +242,63 @@ function clean(roll: LastRoll): LastRoll {
 }
 
 /**
- * Record a roll: append it to the shared stream AND set it as the roller's live
- * last roll. The `lastRolls` write is the only one a player is permitted to make
- * to the live table (see firestore.rules), so this is callable by players too.
+ * Append a roll to the shared stream. The live roll board derives each
+ * participant's last roll from `watchRecentRolls`, so this is the only write a
+ * player makes — no touch of the GM-owned live table.
  */
 export async function recordRoll(roll: LastRoll, uid: string | null, sceneName: string): Promise<void> {
   if (!isFirebaseConfigured) throw new Error(SEALED);
-  const r = clean(roll);
   await addDoc(collection(db, ROLLS), {
-    app: 'ttrpg', ...r, uid: uid ?? null, sceneName, createdAt: serverTimestamp(),
+    app: 'ttrpg', ...clean(roll), uid: uid ?? null, sceneName, createdAt: serverTimestamp(),
   });
-  await setDoc(
-    doc(db, TABLE, TABLE_ID),
-    { lastRolls: { [r.key]: r }, updatedAt: serverTimestamp() },
-    { merge: true },
+}
+
+function toRoll(id: string, data: Record<string, unknown>): RollEntry {
+  return {
+    id,
+    key: (data.key as string) ?? '',
+    name: (data.name as string) ?? '',
+    label: (data.label as string) ?? '',
+    moveName: data.moveName as string | undefined,
+    stat: (data.stat as StatKey | null) ?? null,
+    dice: (data.dice as [number, number]) ?? [0, 0],
+    mod: (data.mod as number) ?? 0,
+    total: (data.total as number) ?? 0,
+    band: (data.band as Band) ?? 'miss',
+    snake: Boolean(data.snake),
+    at: (data.at as number) ?? 0,
+    uid: (data.uid as string | null) ?? null,
+    sceneName: (data.sceneName as string) ?? '',
+    createdAt: data.createdAt as number | undefined,
+  };
+}
+
+/** Live feed of the most recent rolls — drives the live roll board. */
+export function watchRecentRolls(cb: (rows: RollEntry[]) => void, max = 40): () => void {
+  if (!isFirebaseConfigured) {
+    cb([]);
+    return () => {};
+  }
+  const q = query(collection(db, ROLLS), where('app', '==', 'ttrpg'), orderBy('createdAt', 'desc'), fbLimit(max));
+  return onSnapshot(
+    q,
+    (snap) => cb(snap.docs.map((d) => toRoll(d.id, d.data()))),
+    () => cb([]),
   );
 }
 
-/** Read the most recent rolls — the on-demand log (not live). */
-export async function fetchRollLog(max = 50): Promise<RollEntry[]> {
+/** Read a deeper slice of the log on demand (not live). */
+export async function fetchRollLog(max = 60): Promise<RollEntry[]> {
   if (!isFirebaseConfigured) return [];
   const snap = await getDocs(
     query(collection(db, ROLLS), where('app', '==', 'ttrpg'), orderBy('createdAt', 'desc'), fbLimit(max)),
   );
-  return snap.docs.map((d) => {
-    const data = d.data();
-    return {
-      id: d.id,
-      key: (data.key as string) ?? '',
-      name: (data.name as string) ?? '',
-      label: (data.label as string) ?? '',
-      moveName: data.moveName as string | undefined,
-      stat: (data.stat as StatKey | null) ?? null,
-      dice: (data.dice as [number, number]) ?? [0, 0],
-      mod: (data.mod as number) ?? 0,
-      total: (data.total as number) ?? 0,
-      band: (data.band as Band) ?? 'miss',
-      snake: Boolean(data.snake),
-      at: (data.at as number) ?? 0,
-      uid: (data.uid as string | null) ?? null,
-      sceneName: (data.sceneName as string) ?? '',
-      createdAt: data.createdAt as number | undefined,
-    };
-  });
+  return snap.docs.map((d) => toRoll(d.id, d.data()));
+}
+
+/** Reduce a roll feed to each participant's most recent roll. */
+export function lastRollByKey(rolls: RollEntry[]): Record<string, RollEntry> {
+  const out: Record<string, RollEntry> = {};
+  for (const r of rolls) if (!out[r.key]) out[r.key] = r; // feed is newest-first
+  return out;
 }

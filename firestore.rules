@@ -138,24 +138,23 @@ service cloud.firestore {
     }
 
     // sceneTable/main — the single live document the whole table subscribes to.
+    // GM-owned: the GM stages scenes onto the wall, seats participants and calls
+    // initiative. Players never write here — their rolls go to `rolls/` and the
+    // live board is derived from that stream.
     match /sceneTable/{tid} {
       allow read: if hasActiveRole('ttrpg') || isAdmin();
-      // The GM stages the scene, seats participants and calls initiative; only a
-      // GM creates the doc (so the player branch never runs diff() on a null).
-      allow create, delete: if isMasterOf('ttrpg');
-      allow update: if isMasterOf('ttrpg')
-        // …or a player posts only their own live roll board (lastRolls).
-        || (hasActiveRole('ttrpg')
-            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastRolls', 'updatedAt']));
+      allow write: if isMasterOf('ttrpg');
     }
 
-    // rolls/{id} — the shared, append-only roll stream (read on demand).
+    // rolls/{id} — the shared, append-only roll stream (live feed + on-demand log).
     match /rolls/{rid} {
       allow read: if hasActiveRole('ttrpg') || isAdmin();
-      // A member appends their own roll; the roller's uid must be themselves.
-      allow create: if hasActiveRole('ttrpg')
-        && request.resource.data.app == 'ttrpg'
-        && (request.resource.data.uid == myUid() || isMasterOf('ttrpg'));
+      // A GM/admin appends freely; a player appends only their own roll. Note an
+      // admin acting as GM may have no `ttrpg` role doc, so isMasterOf (which
+      // includes isAdmin) must gate the master branch, not hasActiveRole.
+      allow create: if request.resource.data.app == 'ttrpg'
+        && (isMasterOf('ttrpg')
+            || (hasActiveRole('ttrpg') && request.resource.data.uid == myUid()));
       allow update: if false;
       allow delete: if isMasterOf('ttrpg');
     }

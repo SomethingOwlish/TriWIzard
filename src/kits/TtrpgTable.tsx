@@ -88,18 +88,26 @@ interface NavRailProps {
 }
 
 function NavRail({ view, setView, master, onExit }: NavRailProps) {
+  // The rail rests as a slim strip of icons pinned to the border and unfurls its
+  // labels on hover, so a module (the Scene wall above all) gets the full width.
+  const [open, setOpen] = React.useState(false);
   const items: [TableView, string, IconComponent][] = [['card', 'Player Card', CardGlyph], ['scene', 'Scene', Masks], ['moves', 'Moves', Bolt], ['graphs', 'Graphs', Chart], ['tables', 'Tables', Grid], ['chronicle', 'Chronicle', Clock]];
   if (master) items.push(['master', 'Master Screen', Grid]);
+  const label: React.CSSProperties = { whiteSpace: 'nowrap', overflow: 'hidden', opacity: open ? 1 : 0, transition: 'opacity var(--dur-fast) var(--ease-out)' };
   return (
-    <aside style={{ width: 216, flexShrink: 0, borderRight: '1px solid var(--border-1)', background: 'var(--surface-sunken)', display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <div onClick={onExit} title="Back to the public site" style={{ padding: '22px 20px 18px', borderBottom: '1px solid var(--border-1)', display: 'flex', alignItems: 'center', gap: 10, cursor: onExit ? 'pointer' : 'default' }}>
-        <span style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-text)', fontSize: 18, letterSpacing: '0.2em' }}>ᛜ</span>
-        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, letterSpacing: '0.05em', color: 'var(--text-1)' }}>THE TABLE</span>
+    <aside
+      onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}
+      style={{ width: open ? 216 : 60, flexShrink: 0, borderRight: '1px solid var(--border-1)', background: 'var(--surface-sunken)', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden', transition: 'width var(--dur-base) var(--ease-out)', zIndex: 5 }}
+    >
+      <div onClick={onExit} title="Back to the public site" style={{ padding: '22px 18px 18px', borderBottom: '1px solid var(--border-1)', display: 'flex', alignItems: 'center', gap: 10, cursor: onExit ? 'pointer' : 'default' }}>
+        <span style={{ fontFamily: 'var(--font-display)', color: 'var(--accent-text)', fontSize: 18, letterSpacing: '0.2em', flexShrink: 0, width: 22, textAlign: 'center' }}>ᛜ</span>
+        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 15, letterSpacing: '0.05em', color: 'var(--text-1)', ...label }}>THE TABLE</span>
       </div>
-      <nav style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <nav style={{ padding: 10, display: 'flex', flexDirection: 'column', gap: 2 }}>
         {items.map(([k, l, I]) => (
-          <a key={k} onClick={() => setView(k)} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 11, padding: '10px 12px', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-ui)', fontSize: 15, color: view === k ? 'var(--text-1)' : 'var(--text-3)', background: view === k ? 'var(--surface-raised)' : 'transparent', borderLeft: '2px solid', borderColor: view === k ? 'var(--accent)' : 'transparent' }}>
-            <I s={17} style={{ color: view === k ? 'var(--accent-text)' : 'var(--text-3)' }} />{l}
+          <a key={k} onClick={() => setView(k)} title={l} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 11, padding: '10px 11px', borderRadius: 'var(--radius-sm)', fontFamily: 'var(--font-ui)', fontSize: 15, color: view === k ? 'var(--text-1)' : 'var(--text-3)', background: view === k ? 'var(--surface-raised)' : 'transparent', borderLeft: '2px solid', borderColor: view === k ? 'var(--accent)' : 'transparent' }}>
+            <span style={{ flexShrink: 0, width: 18, display: 'flex' }}><I s={17} style={{ color: view === k ? 'var(--accent-text)' : 'var(--text-3)' }} /></span>
+            <span style={label}>{l}</span>
           </a>
         ))}
       </nav>
