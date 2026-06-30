@@ -35,7 +35,7 @@ import {
   where,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from './firebase';
-import type { ConditionLevel, HouseId, StatKey } from './pbta';
+import type { ConditionLevel, HouseId, KnownMove, StatKey } from './pbta';
 import type { Band } from './pbtaDice';
 
 const SCENES = 'scenes';
@@ -56,21 +56,49 @@ export interface SceneNpc {
 
 // ---- Authored scene (the GM's library) -------------------------------------
 
+/** How many content frames the scene shows, laid out in a 2×2 grid. */
+export type SceneLayout = 1 | 2 | 4;
+
+/** A content panel — shows its image as a cover background if set, else its text. */
+export interface SceneFrame {
+  id: string;
+  image: string;
+  text: string;
+}
+
+function fid(): string {
+  return Math.random().toString(36).slice(2, 9);
+}
+
+export function newFrame(): SceneFrame {
+  return { id: fid(), image: '', text: '' };
+}
+
+/** Pad/trim a frame list to exactly `n` frames. */
+export function fitFrames(frames: SceneFrame[], n: SceneLayout): SceneFrame[] {
+  const out = frames.slice(0, n);
+  while (out.length < n) out.push(newFrame());
+  return out;
+}
+
 export interface AuthoredScene {
   id: string;
   app: 'ttrpg';
   name: string;
-  background: string;
   notes: string;
+  /** 1, 2 or 4 — how many of `frames` show, in a 2×2 grid. */
+  layout: SceneLayout;
+  /** Content panels; each renders its image (cover) or, failing that, its text. */
+  frames: SceneFrame[];
   npcs: SceneNpc[];
   createdAt?: number;
   updatedAt?: number;
 }
 
-export type SceneInput = Pick<AuthoredScene, 'name' | 'background' | 'notes' | 'npcs'>;
+export type SceneInput = Pick<AuthoredScene, 'name' | 'notes' | 'layout' | 'frames' | 'npcs'>;
 
 export function blankScene(): SceneInput {
-  return { name: '', background: '', notes: '', npcs: [] };
+  return { name: '', notes: '', layout: 1, frames: [newFrame()], npcs: [] };
 }
 
 // ---- Live participants + rolls ---------------------------------------------
@@ -90,6 +118,8 @@ export interface SceneParticipant {
   /** Scene-local harm track, pre-loaded from the card, edited only in the scene. */
   conditions: Record<StatKey, ConditionLevel>;
   neutralized: boolean;
+  /** Known moves snapshotted from the card — a player may roll only these. */
+  moves: KnownMove[];
 }
 
 export interface LastRoll {
@@ -117,7 +147,7 @@ export interface TurnState {
 
 export interface SceneTable {
   activeSceneId: string | null;
-  scene: { name: string; background: string; notes: string } | null;
+  scene: { name: string; notes: string; layout: SceneLayout; frames: SceneFrame[] } | null;
   npcs: SceneNpc[];
   participants: SceneParticipant[];
   turn: TurnState | null;
@@ -141,8 +171,9 @@ function toScene(id: string, data: Record<string, unknown>): AuthoredScene {
     id,
     app: 'ttrpg',
     name: (data.name as string) ?? '',
-    background: (data.background as string) ?? '',
     notes: (data.notes as string) ?? '',
+    layout: (data.layout as SceneLayout) ?? 1,
+    frames: (data.frames as SceneFrame[]) ?? [],
     npcs: (data.npcs as SceneNpc[]) ?? [],
     createdAt: data.createdAt as number | undefined,
     updatedAt: data.updatedAt as number | undefined,
@@ -187,7 +218,7 @@ export async function updateTable(patch: Partial<SceneTable>): Promise<void> {
 export async function activateScene(scene: AuthoredScene): Promise<void> {
   await updateTable({
     activeSceneId: scene.id,
-    scene: { name: scene.name, background: scene.background, notes: scene.notes },
+    scene: { name: scene.name, notes: scene.notes, layout: scene.layout, frames: scene.frames },
     npcs: scene.npcs,
   });
 }
