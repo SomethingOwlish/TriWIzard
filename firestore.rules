@@ -126,6 +126,48 @@ service cloud.firestore {
       allow delete: if ownsIt() || isTtrpgMaster();
     }
 
+    // ---- TTRPG scenes, the live table & rolls (Tier 3) --------------------
+    // The Scene is the one live module. Authored scenes are GM-only; the live
+    // table is GM-owned save for `lastRolls`, which a player may touch to post
+    // their own roll; the roll stream is append-only by any table member.
+
+    // scenes/{id} — the GM's authored scene library. Players never read these;
+    // they see only the activated copy mirrored into sceneTable/main.
+    match /scenes/{sid} {
+      allow read, write: if isMasterOf('ttrpg');
+    }
+
+    // sceneTable/main — the single live document the whole table subscribes to.
+    match /sceneTable/{tid} {
+      allow read: if hasActiveRole('ttrpg') || isAdmin();
+      // The GM stages the scene, seats participants and calls initiative.
+      allow write: if isMasterOf('ttrpg')
+        // …or a player posts only their own live roll board (lastRolls).
+        || (hasActiveRole('ttrpg')
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastRolls', 'updatedAt']));
+    }
+
+    // rolls/{id} — the shared, append-only roll stream (read on demand).
+    match /rolls/{rid} {
+      allow read: if hasActiveRole('ttrpg') || isAdmin();
+      // A member appends their own roll; the roller's uid must be themselves.
+      allow create: if hasActiveRole('ttrpg')
+        && request.resource.data.app == 'ttrpg'
+        && (request.resource.data.uid == myUid() || isMasterOf('ttrpg'));
+      allow update: if false;
+      allow delete: if isMasterOf('ttrpg');
+    }
+
+    // ---- TTRPG move library (Tier 3, B3.4) --------------------------------
+    // The GM curates moves and *provides* them to players via `published`.
+    match /moves/{mid} {
+      allow read: if isMasterOf('ttrpg')
+        || (hasActiveRole('ttrpg') && resource.data.published == true);
+      allow create, update: if isMasterOf('ttrpg')
+        && request.resource.data.app == 'ttrpg';
+      allow delete: if isMasterOf('ttrpg');
+    }
+
     // ---- everything else ---------------------------------------------------
     // Locked until its tier defines and tests explicit rules.
     match /{document=**} {

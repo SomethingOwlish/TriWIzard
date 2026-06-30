@@ -6,10 +6,12 @@ import {
   Button, IconButton, Card, Badge, Tag, Avatar, Tabs, DiceRoller, StatBlock,
   DataTable, Timeline, CommentThread, Switch, ThemeSwitcher,
 } from '../components';
-import { Dice, Chart, Grid, Clock, CardGlyph } from './icons';
+import { Dice, Chart, Grid, Clock, CardGlyph, Masks, Bolt } from './icons';
 import { useSession, effectiveRole } from '../stores/sessionStore';
 import type { CardRole } from '../lib/pbta';
 import { PlayerCharacters, GmRoster } from './ttrpg/Characters';
+import { SceneModule } from './ttrpg/Scene';
+import { MovesModule } from './ttrpg/Moves';
 
 interface Props {
   theme: string;
@@ -76,7 +78,7 @@ function LineChart({ points, height = 180 }: LineChartProps) {
 }
 
 type IconComponent = (p: { s?: number; style?: React.CSSProperties }) => React.ReactElement;
-type TableView = 'card' | 'dice' | 'graphs' | 'tables' | 'chronicle' | 'master';
+type TableView = 'card' | 'scene' | 'moves' | 'dice' | 'graphs' | 'tables' | 'chronicle' | 'master';
 
 interface NavRailProps {
   view: TableView;
@@ -86,7 +88,7 @@ interface NavRailProps {
 }
 
 function NavRail({ view, setView, master, onExit }: NavRailProps) {
-  const items: [TableView, string, IconComponent][] = [['card', 'Player Card', CardGlyph], ['dice', 'Dice', Dice], ['graphs', 'Graphs', Chart], ['tables', 'Tables', Grid], ['chronicle', 'Chronicle', Clock]];
+  const items: [TableView, string, IconComponent][] = [['card', 'Player Card', CardGlyph], ['scene', 'Scene', Masks], ['moves', 'Moves', Bolt], ['graphs', 'Graphs', Chart], ['tables', 'Tables', Grid], ['chronicle', 'Chronicle', Clock]];
   if (master) items.push(['master', 'Master Screen', Grid]);
   return (
     <aside style={{ width: 216, flexShrink: 0, borderRight: '1px solid var(--border-1)', background: 'var(--surface-sunken)', display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -322,6 +324,8 @@ export default function TtrpgTable({ theme, setTheme, onExit, onLarp }: Props) {
           {view === 'card' && (user
             ? <PlayerCharacters uid={user.uid} email={user.email} role={role} />
             : <PlayerCard />)}
+          {view === 'scene' && <SceneModule role={role} userUid={user?.uid ?? null} />}
+          {view === 'moves' && <MovesModule role={role} />}
           {view === 'dice' && <DiceView />}
           {view === 'graphs' && <Graphs />}
           {view === 'tables' && <Tables />}

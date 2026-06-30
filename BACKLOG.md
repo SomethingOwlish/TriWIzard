@@ -95,10 +95,12 @@ Build order: **Foundation → TTRPG → LARP → Site → Hardening.**
 - [x] **B2.4** GM roster — master/admin sees all table characters, opens/edits any, edits GM-only fields; driven by `effectiveRole('ttrpg')`. Security Rules + composite index added for `characters`.
 
 ### TIER 3 — TTRPG Scene (live) + Dice + Moves
-- [ ] **B3.1** Scene data model + GM setup (create scene, participants, elements).
-- [ ] **B3.2** Live scene sync via `onSnapshot` — GM shares to players, GM controls.
-- [ ] **B3.3** Dice roller: PBtA 2d6+stat, move resolution (miss / 7–9 / 10+), roll log in scene.
-- [ ] **B3.4** Move module: GM create/edit/provide moves; player view; rule-helper link.
+- [x] **B3.1** Scene data model + GM setup. `src/lib/scenes.ts`: GM authors a `scenes/{id}` library (name/background/notes/NPC tokens); seats PCs (snapshotting card stats + conditions) and NPC tokens as participants. Scene UI in `src/kits/ttrpg/Scene.tsx`.
+- [x] **B3.2** Live sync. One singleton `sceneTable/main` doc, one `onSnapshot` per viewer (cheapest free-tier footprint): active scene, NPCs, participants with **scene-local** condition trackers, turn order, and each participant's last roll. GM owns the doc; players may write only `lastRolls` (firestore.rules `diff().affectedKeys().hasOnly`). Single shared roll stream; older rolls in `rolls/{id}`, read on demand (not live).
+- [x] **B3.3** Dice roller (`src/lib/pbtaDice.ts`): 2d6 + stat on the **custom Durmstrang ladder** (snake-eyes / ≤6 / 7–10 / 11–16 / 17+ — overrides the backlog's earlier "miss/7–9/10+" shorthand). Stat base auto-pulled from the card; condition penalties (incl. Critical −6/−10) from the scene tracker; bare-2d6 initiative for turn order.
+- [x] **B3.4** Move module (`src/lib/moves.ts` + `src/kits/ttrpg/Moves.tsx`): GM-curated catalogue with full taxonomy (kind/house/Simpla-Maxima-Ultima/XP/stat/trigger/outcome-by-band); GM **provides** via `published`; player reads provided moves; rolling a move in the scene auto-uses its stat and surfaces its trigger. "Import the canon" seeds basic+general moves from `pbta.ts`.
+
+> **T3 notes (2026-06-30).** Requirements set via /grill-me (12 questions). Decisions: full narrative scene (name/background/notes + NPC tokens), schema dice ladder, PCs + ad-hoc NPC tokens, single shared roll stream, open-table roll visibility, **soft-hide** NPCs (UI-only — Firestore can't field-filter a live doc; documented), auto-pull stat + **pre-load** card conditions into a scene-local tracker (no write-back), full move taxonomy. New collections: `scenes`, `sceneTable`, `rolls`, `moves` (+ rules + 2 composite indexes). Build + typecheck green.
 
 ### TIER 4 — TTRPG Knowledge: Lore / Chronology / Rule Helper / NPCs
 - [ ] **B4.1** Lore module (GM CRUD, player read).
