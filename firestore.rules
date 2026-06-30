@@ -169,6 +169,55 @@ service cloud.firestore {
       allow delete: if isMasterOf('ttrpg');
     }
 
+    // ---- TTRPG knowledge: lore / rulebook / bestiary (Tier 4) -------------
+    // GM-authored reference, *provided* to players via save → publish. Each doc
+    // carries a denormalised `isPublished` flag so a player's list query returns
+    // only readable documents. NPC dossiers are single docs (soft-hide): a
+    // player who reads a published NPC could read its raw secret fields too —
+    // the trade-off the table accepted, mirroring hidden Scene NPC tokens.
+    function authoredRead() {
+      return isMasterOf('ttrpg')
+        || (hasActiveRole('ttrpg') && resource.data.isPublished == true);
+    }
+    function authoredWrite() {
+      return isMasterOf('ttrpg') && request.resource.data.app == 'ttrpg';
+    }
+
+    match /lore/{lid} {
+      allow read: if authoredRead();
+      allow create, update: if authoredWrite();
+      allow delete: if isMasterOf('ttrpg');
+    }
+
+    match /rulebook/{rid} {
+      allow read: if authoredRead();
+      allow create, update: if authoredWrite();
+      allow delete: if isMasterOf('ttrpg');
+    }
+
+    match /npcs/{nid} {
+      allow read: if authoredRead();
+      allow create, update: if authoredWrite();
+      allow delete: if isMasterOf('ttrpg');
+    }
+
+    // npcGraph/{doc} — the NPC connections web. A GM tool; players never read it.
+    match /npcGraph/{gid} {
+      allow read, write: if isMasterOf('ttrpg');
+    }
+
+    // chronology/{world | characterId} — the campaign timeline plus a private
+    // timeline per character. A player reads the world timeline and only their
+    // own character's (gated by `ownerUid`), and only once published.
+    match /chronology/{cid} {
+      allow read: if isMasterOf('ttrpg')
+        || (hasActiveRole('ttrpg')
+            && resource.data.isPublished == true
+            && (cid == 'world' || resource.data.ownerUid == myUid()));
+      allow create, update: if isMasterOf('ttrpg') && request.resource.data.app == 'ttrpg';
+      allow delete: if isMasterOf('ttrpg');
+    }
+
     // ---- everything else ---------------------------------------------------
     // Locked until its tier defines and tests explicit rules.
     match /{document=**} {
