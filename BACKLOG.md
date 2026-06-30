@@ -76,12 +76,14 @@ Build order: **Foundation → TTRPG → LARP → Site → Hardening.**
 - [x] **B0.5** Design-system primitives: already delivered in the design handoff (24 primitives, tokens, 3-surface shell). Re-verified, now TypeScript.
 
 ### TIER 1 — Identity, Roles & Permissions Core
-- [ ] **B1.1** Auth UI: login/register (Google + Email/Password), logout, `users/{uid}` bootstrap.
-- [ ] **B1.2** Role model + data layer (`roles` collection: app/type/status/links).
-- [ ] **B1.3** Firestore Security Rules v1 (per-app role gating, ownership checks).
-- [ ] **B1.4** Cabinet selector screen + per-app/per-role route guards.
-- [ ] **B1.5** Admin role-switch ("view as", no re-login) infrastructure.
-- [ ] **B1.6** Save/publish primitive (draft vs published doc states) shared util.
+- [x] **B1.1** Auth UI: login/register (Google + Email/Password), logout, `users/{uid}` bootstrap. _`src/lib/auth.ts` + `src/lib/users.ts`; `AuthGate` (enter/enrol/recover) + `VerifyNotice`. Extras: password reset, email-verification gate, display-name on enrol, in-world error voice._
+- [x] **B1.2** Role model + data layer (`roles` collection: app/type/status/links). _`src/lib/roles.ts` + `src/lib/types.ts`. Deterministic ids `${app}__${uid}` (one grant per hall per account) so Security Rules can `get` standing directly._
+- [x] **B1.3** Firestore Security Rules v1 (per-app role gating, ownership checks). _`firestore.rules` + `firebase.json` + `firestore.indexes.json`. Self-profile w/ no self-admin; role reads by owner/master/admin; master may not mint admins; default-deny on all other collections._
+- [x] **B1.4** Cabinet selector screen + per-app/per-role route guards. _`App.tsx` → HashRouter routes; `kits/auth/guards.tsx` (`RequireAuth`/`RequireVerified`/`RequireRole` + `Denied`/`HallLoading`); `kits/CabinetSelector.tsx`._
+- [x] **B1.5** Admin role-switch ("view as", no re-login) infrastructure. _`viewAs` in `sessionStore`; `effectiveRole`/`canEnter` selectors honour it; `kits/auth/RoleSwitcher.tsx` overlay on cabinet routes._
+- [x] **B1.6** Save/publish primitive (draft vs published doc states) shared util. _`src/lib/publish.ts`: `saveDraft`/`publishDoc`/`revertDraft`/`readPublishable`, `state` ∈ draft|published|dirty._
+
+> **T1 notes (2026-06-30).** State via **zustand** (`src/stores/sessionStore.ts`, wired by `useSessionInit`). No live Firebase secrets in this clone (`.env` is gitignored) — every lib guards on `isFirebaseConfigured`, so build/render works credential-less and shows an in-world "hall is sealed" notice; fill `.env` to go live. Theme is now remembered per surface (localStorage + profile mirror). Build + typecheck green.
 
 ### TIER 2 — TTRPG Player Core: Character Card (PBtA)
 > Schema sourced from the public Notion PBtA content.
