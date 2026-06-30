@@ -98,6 +98,34 @@ service cloud.firestore {
       allow delete: if isAdmin() || isMasterOf(resource.data.app);
     }
 
+    // ---- characters/{cid} (Tier 2) ----------------------------------------
+    // A player's PBtA sheet at the TTRPG table. Standing is gated at the
+    // document level here (rules are doc-scoped on the free plan); the per-field
+    // player/master split (xp, student rating, master's notes) is enforced by
+    // the client card. The bearer tends their own; masters/admins tend any.
+    match /characters/{cid} {
+      function isTtrpgMaster() {
+        return isMasterOf('ttrpg');
+      }
+      function ownsIt() {
+        return isSignedIn() && resource.data.ownerUid == myUid();
+      }
+
+      allow read: if ownsIt() || isTtrpgMaster();
+
+      // A bearer enrols their own character; a master may enter one too.
+      allow create: if isSignedIn()
+        && request.resource.data.app == 'ttrpg'
+        && (request.resource.data.ownerUid == myUid() || isTtrpgMaster());
+
+      // Owner or master may edit; ownership and hall are immutable.
+      allow update: if (ownsIt() || isTtrpgMaster())
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.app == resource.data.app;
+
+      allow delete: if ownsIt() || isTtrpgMaster();
+    }
+
     // ---- everything else ---------------------------------------------------
     // Locked until its tier defines and tests explicit rules.
     match /{document=**} {

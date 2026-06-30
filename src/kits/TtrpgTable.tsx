@@ -7,6 +7,9 @@ import {
   DataTable, Timeline, CommentThread, Switch, ThemeSwitcher,
 } from '../components';
 import { Dice, Chart, Grid, Clock, CardGlyph } from './icons';
+import { useSession, effectiveRole } from '../stores/sessionStore';
+import type { CardRole } from '../lib/pbta';
+import { PlayerCharacters, GmRoster } from './ttrpg/Characters';
 
 interface Props {
   theme: string;
@@ -103,19 +106,19 @@ function NavRail({ view, setView, master, onExit }: NavRailProps) {
 }
 
 interface TopBarProps {
-  master: boolean;
-  setMaster: (m: boolean) => void;
+  role: CardRole;
   theme: string;
   setTheme: (t: string) => void;
   onLarp?: () => void;
 }
 
-function TopBar({ master, setMaster, theme, setTheme, onLarp }: TopBarProps) {
+function TopBar({ role, theme, setTheme, onLarp }: TopBarProps) {
+  const label = role === 'admin' ? 'Keeper of the ledger' : role === 'master' ? 'Master of the table' : 'At the table';
   return (
     <div style={{ height: 60, flexShrink: 0, borderBottom: '1px solid var(--border-1)', background: 'color-mix(in srgb, var(--surface-page) 88%, transparent)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', padding: '0 24px', gap: 16 }}>
-      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)' }}>TTRPG · Session XII</div>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--text-3)' }}>TTRPG · Durmstrang</div>
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 18 }}>
-        <Switch checked={master} onChange={setMaster} label="Master mode" size="sm" />
+        <Badge tone={role === 'player' ? 'neutral' : 'accent'} dot>{label}</Badge>
         <span style={{ width: 1, height: 24, background: 'var(--border-2)' }} />
         <ThemeSwitcher scope="ttrpg" value={theme} onChange={setTheme} />
         {onLarp && <Button variant="secondary" size="sm" onClick={onLarp}>← To the Field</Button>}
@@ -306,20 +309,24 @@ function MasterScreen() {
 /** TtrpgTable — player & master TTRPG cabinet shell. Theme is owned by the App. */
 export default function TtrpgTable({ theme, setTheme, onExit, onLarp }: Props) {
   const [view, setView] = React.useState<TableView>('card');
-  const [master, setMaster] = React.useState(false);
+  const role = (useSession((s) => effectiveRole(s, 'ttrpg')) ?? 'player') as CardRole;
+  const user = useSession((s) => s.user);
+  const master = role === 'master' || role === 'admin';
   React.useEffect(() => { if (!master && view === 'master') setView('card'); }, [master, view]);
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       <NavRail view={view} setView={setView} master={master} onExit={onExit} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar master={master} setMaster={setMaster} theme={theme} setTheme={setTheme} onLarp={onLarp} />
+        <TopBar role={role} theme={theme} setTheme={setTheme} onLarp={onLarp} />
         <div style={{ flex: 1, overflow: 'auto' }} className="tw-stone-wash">
-          {view === 'card' && <PlayerCard />}
+          {view === 'card' && (user
+            ? <PlayerCharacters uid={user.uid} email={user.email} role={role} />
+            : <PlayerCard />)}
           {view === 'dice' && <DiceView />}
           {view === 'graphs' && <Graphs />}
           {view === 'tables' && <Tables />}
           {view === 'chronicle' && <Chronicle />}
-          {view === 'master' && master && <MasterScreen />}
+          {view === 'master' && master && <GmRoster role={role} />}
         </div>
       </div>
     </div>
