@@ -16,6 +16,7 @@ export { Select } from './forms/Select';
 export { Checkbox } from './forms/Checkbox';
 export { RadioGroup } from './forms/RadioGroup';
 export { Switch } from './forms/Switch';
+export { ImagePicker } from './forms/ImagePicker';
 
 export { Dialog } from './feedback/Dialog';
 export { Toast } from './feedback/Toast';
@@ -29,3 +30,4 @@ export { DiceRoller } from './domain/DiceRoller';
 export { DataTable } from './domain/DataTable';
 export { CommentThread } from './domain/CommentThread';
 export { Timeline } from './domain/Timeline';
+export { Markdown } from './domain/Markdown';

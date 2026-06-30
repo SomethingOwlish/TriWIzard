@@ -103,10 +103,12 @@ Build order: **Foundation → TTRPG → LARP → Site → Hardening.**
 > **T3 notes (2026-06-30).** Requirements set via /grill-me (12 questions). Decisions: full narrative scene (name/background/notes + NPC tokens), schema dice ladder, PCs + ad-hoc NPC tokens, single shared roll stream, open-table roll visibility, **soft-hide** NPCs (UI-only — Firestore can't field-filter a live doc; documented), auto-pull stat + **pre-load** card conditions into a scene-local tracker (no write-back), full move taxonomy. New collections: `scenes`, `sceneTable`, `rolls`, `moves` (+ rules + 2 composite indexes). Build + typecheck green.
 
 ### TIER 4 — TTRPG Knowledge: Lore / Chronology / Rule Helper / NPCs
-- [ ] **B4.1** Lore module (GM CRUD, player read).
-- [ ] **B4.2** Chronology/timeline module (GM edit, player read).
-- [ ] **B4.3** Rule helper (moves/rules reference, GM-editable).
-- [ ] **B4.4** NPC storage: GM create/edit/restructure, save data, build connections between NPCs (graph); player sees cards only.
+- [x] **B4.1** Lore module (GM CRUD, player read). Wiki-style tree (`lore/{id}`, `parentId`); markdown body + cover image + `[[cross-links]]`. `src/lib/lore.ts`, `src/kits/ttrpg/Lore.tsx`.
+- [x] **B4.2** Chronology/timeline module (GM edit, player read). Shared world timeline **and** per-character chronicles (`chronology/{world|charId}`, single `events[]` doc); rendered via Timeline. `src/lib/chronology.ts`, `src/kits/ttrpg/Chronology.tsx`.
+- [x] **B4.3** Rule helper (rules reference, GM-editable). Standalone (not Moves); markdown articles + editable reference tables grouped by section (`rulebook/{id}`). `src/lib/rulebook.ts`, `src/kits/ttrpg/Rulebook.tsx`.
+- [x] **B4.4** NPC storage: GM create/edit, save data, connections graph; player sees cards only. Single-doc soft-hide (`npcs/{id}`: published card + hidden secret/stats/pos); GM-only SVG connections web (`npcGraph/edges`, directed/typed/toned). Wired into the Scene ("call a soul from the bestiary"). `src/lib/npcs.ts`, `src/kits/ttrpg/Bestiary.tsx`.
+
+> **T4 notes (2026-06-30).** Requirements set via /grill-me (16 questions). Decisions: **four new nav tabs** (mocks kept), **open-table** sharing (published = all active ttrpg players, mirrors Moves), **save→publish** via new `src/lib/authored.ts` (collection analogue of `publish.ts`, adds queryable `isPublished`; single-doc modules use deterministic-id `setDoc`), **single-doc soft-hide** for NPC secrets (rules are doc-scoped — accepted, like Tier-3 hidden tokens). Lore = hierarchical tree; Chronology = world + per-character; Rule Helper standalone (articles + tables); NPC card rich (GM stats/secrets hidden); graph TTRPG-specific, GM-positioned SVG, directed/typed/toned edges; Bestiary seats Scene NPCs. New primitives `Markdown` + `ImagePicker` (Imgur upload **or** URL). Reads on-demand (`getDocs`), not live. New collections `lore`/`chronology`/`rulebook`/`npcs`/`npcGraph` (+ rules; no new composite indexes — player queries are single-equality `isPublished==true`). Build + typecheck green.
 
 ### TIER 5 — LARP Player Core + Character Pages + Logs
 - [ ] **B5.1** LARP character page data model (player-allowed fields vs master-only fields).

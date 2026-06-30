@@ -23,6 +23,7 @@ import {
 } from '../../lib/scenes';
 import { watchPublishedMoves, type MoveEntry } from '../../lib/moves';
 import { watchAllCharacters, type CharacterRecord } from '../../lib/characters';
+import { fetchNpcs, type NpcEntry } from '../../lib/npcs';
 
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--text-3)' };
 const display: React.CSSProperties = { fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--text-1)' };
@@ -397,6 +398,7 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
   const [recent, setRecent] = React.useState<RollEntry[]>([]);
   const [library, setLibrary] = React.useState<AuthoredScene[]>([]);
   const [chars, setChars] = React.useState<CharacterRecord[]>([]);
+  const [bestiary, setBestiary] = React.useState<NpcEntry[]>([]);
   const [editing, setEditing] = React.useState<{ id: string | null; input: SceneInput } | null>(null);
   const [raising, setRaising] = React.useState<AuthoredScene | null>(null);
   const [logOpen, setLogOpen] = React.useState(false);
@@ -409,6 +411,7 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
   React.useEffect(() => watchPublishedMoves(setMoves), []);
   React.useEffect(() => watchRecentRolls(setRecent), []);
   React.useEffect(() => { if (!gm) return; const a = watchScenes(setLibrary); const b = watchAllCharacters(setChars); return () => { a(); b(); }; }, [gm]);
+  React.useEffect(() => { if (gm) fetchNpcs(true).then(setBestiary).catch(() => setBestiary([])); }, [gm]);
 
   const lastRolls = React.useMemo(() => lastRollByKey(recent), [recent]);
 
@@ -426,6 +429,7 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
   const patchParticipant = (key: string, patch: Partial<SceneParticipant>) => setParticipants(participants.map((p) => p.key === key ? { ...p, ...patch } : p));
   const addPc = (rec: CharacterRecord) => { if (participants.some((p) => p.key === rec.id)) return; setParticipants([...participants, participantFromChar(rec)]); };
   const addNpc = () => setParticipants([...participants, { key: uid(), kind: 'npc', name: 'New foe', house: '', stats: { ...ZERO_STATS }, conditions: { ...NO_COND }, neutralized: false, moves: [] }]);
+  const addNpcFromBestiary = (n: NpcEntry) => { const c = n.draft; setParticipants([...participants, { key: uid(), kind: 'npc', name: c?.name || 'Foe', house: c?.house ?? '', stats: n.stats ? { ...n.stats } : { ...ZERO_STATS }, conditions: { ...NO_COND }, neutralized: false, moves: [] }]); };
 
   function raise(scene: AuthoredScene, target: SlotTarget) {
     const slot: ActiveSlot = { sceneId: scene.id, name: scene.name, image: scene.image, text: scene.text };
@@ -591,6 +595,14 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
                 <div style={{ ...mono, fontSize: 9, marginBottom: 8 }}>Seat a character</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   {seatable.map((c) => <Button key={c.id} size="sm" variant="secondary" iconStart={<Plus s={13} />} onClick={() => addPc(c)}>{c.name || 'Unnamed'}</Button>)}
+                </div>
+              </div>
+            )}
+            {gm && bestiary.length > 0 && (
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-1)' }}>
+                <div style={{ ...mono, fontSize: 9, marginBottom: 8 }}>Call a soul from the bestiary</div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                  {bestiary.map((n) => <Button key={n.id} size="sm" variant="secondary" iconStart={<Plus s={13} />} onClick={() => addNpcFromBestiary(n)}>{n.draft?.name || 'NPC'}</Button>)}
                 </div>
               </div>
             )}

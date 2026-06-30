@@ -6,12 +6,16 @@ import {
   Button, IconButton, Card, Badge, Tag, Avatar, Tabs, DiceRoller, StatBlock,
   DataTable, Timeline, CommentThread, Switch, ThemeSwitcher,
 } from '../components';
-import { Dice, Chart, Grid, Clock, CardGlyph, Masks, Bolt } from './icons';
+import { Dice, Chart, Grid, Clock, CardGlyph, Masks, Bolt, Scroll, Compass, Users } from './icons';
 import { useSession, effectiveRole } from '../stores/sessionStore';
 import type { CardRole } from '../lib/pbta';
 import { PlayerCharacters, GmRoster } from './ttrpg/Characters';
 import { SceneModule } from './ttrpg/Scene';
 import { MovesModule } from './ttrpg/Moves';
+import { LoreModule } from './ttrpg/Lore';
+import { ChronologyModule } from './ttrpg/Chronology';
+import { RulebookModule } from './ttrpg/Rulebook';
+import { BestiaryModule } from './ttrpg/Bestiary';
 
 interface Props {
   theme: string;
@@ -78,7 +82,7 @@ function LineChart({ points, height = 180 }: LineChartProps) {
 }
 
 type IconComponent = (p: { s?: number; style?: React.CSSProperties }) => React.ReactElement;
-type TableView = 'card' | 'scene' | 'moves' | 'dice' | 'graphs' | 'tables' | 'chronicle' | 'master';
+type TableView = 'card' | 'scene' | 'moves' | 'lore' | 'chronology' | 'rulebook' | 'bestiary' | 'dice' | 'graphs' | 'tables' | 'chronicle' | 'master';
 
 interface NavRailProps {
   view: TableView;
@@ -91,7 +95,7 @@ function NavRail({ view, setView, master, onExit }: NavRailProps) {
   // The rail rests as a slim strip of icons pinned to the border and unfurls its
   // labels on hover, so a module (the Scene wall above all) gets the full width.
   const [open, setOpen] = React.useState(false);
-  const items: [TableView, string, IconComponent][] = [['card', 'Player Card', CardGlyph], ['scene', 'Scene', Masks], ['moves', 'Moves', Bolt], ['graphs', 'Graphs', Chart], ['tables', 'Tables', Grid], ['chronicle', 'Chronicle', Clock]];
+  const items: [TableView, string, IconComponent][] = [['card', 'Player Card', CardGlyph], ['scene', 'Scene', Masks], ['moves', 'Moves', Bolt], ['lore', 'Lore', Scroll], ['chronology', 'Chronology', Clock], ['rulebook', 'Rules', Compass], ['bestiary', 'Bestiary', Users], ['graphs', 'Graphs', Chart], ['tables', 'Tables', Grid], ['chronicle', 'Chronicle', Clock]];
   if (master) items.push(['master', 'Master Screen', Grid]);
   const label: React.CSSProperties = { whiteSpace: 'nowrap', overflow: 'hidden', opacity: open ? 1 : 0, transition: 'opacity var(--dur-fast) var(--ease-out)' };
   return (
@@ -334,6 +338,10 @@ export default function TtrpgTable({ theme, setTheme, onExit, onLarp }: Props) {
             : <PlayerCard />)}
           {view === 'scene' && <SceneModule role={role} userUid={user?.uid ?? null} />}
           {view === 'moves' && <MovesModule role={role} />}
+          {view === 'lore' && <LoreModule role={role} />}
+          {view === 'chronology' && <ChronologyModule role={role} userUid={user?.uid ?? null} />}
+          {view === 'rulebook' && <RulebookModule role={role} />}
+          {view === 'bestiary' && <BestiaryModule role={role} />}
           {view === 'dice' && <DiceView />}
           {view === 'graphs' && <Graphs />}
           {view === 'tables' && <Tables />}
