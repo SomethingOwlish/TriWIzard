@@ -69,11 +69,11 @@ A single user account can hold **different roles in LARP vs TTRPG**. Admin can *
 Build order: **Foundation → TTRPG → LARP → Site → Hardening.**
 
 ### TIER 0 — Project Foundation & Deploy
-- [ ] **B0.1** Scaffold: Vite + React + TS + Tailwind, folder structure, `HashRouter`, lint/format.
-- [ ] **B0.2** Firebase init: Firestore + Auth clients, typed data layer, env config, `.env.example`.
-- [ ] **B0.3** Imgur adapter: anonymous upload (returns URL + deletehash), error/limit handling.
-- [ ] **B0.4** Deploy: GitHub Actions → Pages, Vite `base` = repo name, SPA fallback.
-- [ ] **B0.5** Design-system primitives from pasted design doc: tokens, base components, app shell/layout.
+- [x] **B0.1** Scaffold: Vite + React + **TS** (full migration of design system to `.tsx`), folder structure, `HashRouter` shell. _Styling stays CSS-variable/inline per CLAUDE.md — no Tailwind. Lint/format deferred._
+- [x] **B0.2** Firebase init: Firestore + Auth clients (`src/lib/firebase.ts`), env config via Vite vars, `.env` + `.env.example`. _Live config provided._
+- [x] **B0.3** Imgur adapter (`src/lib/imgur.ts`): anonymous upload (URL + deletehash), delete, rate-limit/error handling. _Awaiting real `VITE_IMGUR_CLIENT_ID`; placeholder until set._
+- [x] **B0.4** Deploy: GitHub Actions → Pages (`.github/workflows/deploy.yml`), Vite `base = /TriWizard/`, SPA `404.html` fallback. _Not yet run; needs Pages enabled + Actions secrets._
+- [x] **B0.5** Design-system primitives: already delivered in the design handoff (24 primitives, tokens, 3-surface shell). Re-verified, now TypeScript.
 
 ### TIER 1 — Identity, Roles & Permissions Core
 - [ ] **B1.1** Auth UI: login/register (Google + Email/Password), logout, `users/{uid}` bootstrap.
