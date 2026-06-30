@@ -7,6 +7,22 @@
         { "fieldPath": "app", "order": "ASCENDING" },
         { "fieldPath": "ownerUid", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "moves",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "app", "order": "ASCENDING" },
+        { "fieldPath": "published", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "rolls",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "app", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
