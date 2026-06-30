@@ -177,22 +177,17 @@ function ParticipantCard({ p, roll, gm, acting, onConditions, onNeutralize, onRe
   const crit = isCritical(p.conditions);
   return (
     <Card padding="14px" accentEdge={acting} style={p.neutralized ? { opacity: 0.6 } : undefined}>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+      {/* Header — the name owns the full width so long names never collide. */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
         <Avatar initials={initialsOf(p.name)} size="md" square status={p.neutralized ? 'dead' : crit ? 'wounded' : 'alive'} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ ...display, fontSize: 16 }}>{p.name}</span>
+          <div style={{ ...display, fontSize: 16, lineHeight: 1.2, wordBreak: 'break-word' }}>{p.name}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+            <span style={{ ...mono, fontSize: 9 }}>{house ? `${house.rune} ${house.en}` : p.kind === 'npc' ? 'token' : 'no house'}</span>
             {p.kind === 'npc' && <Badge tone="ember" outline>NPC</Badge>}
             {acting && <Badge tone="accent" dot>acting</Badge>}
           </div>
-          <div style={{ ...mono, fontSize: 9 }}>{house ? `${house.rune} ${house.en}` : p.kind === 'npc' ? 'token' : 'no house'}</div>
         </div>
-        {gm && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
-            <Button variant="ghost" size="sm" onClick={() => onNeutralize(!p.neutralized)}>{p.neutralized ? 'Revive' : 'Neutralize'}</Button>
-            <button type="button" aria-label="Remove" onClick={onRemove} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: 12 }}>remove</button>
-          </div>
-        )}
       </div>
       <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 4 }}>
         {STAT_KEYS.map((k) => (
@@ -201,6 +196,17 @@ function ParticipantCard({ p, roll, gm, acting, onConditions, onNeutralize, onRe
       </div>
       <div style={{ marginTop: 8 }}><ConditionPips p={p} editable={gm} onChange={onConditions} /></div>
       {roll && <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-1)' }}><ResultChip roll={roll} compact /></div>}
+      {/* Footer — GM controls, kept clear of the name. */}
+      {gm && (
+        <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border-1)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Button variant="ghost" size="sm" onClick={() => onNeutralize(!p.neutralized)}>{p.neutralized ? 'Revive' : 'Neutralize'}</Button>
+          <span style={{ flex: 1 }} />
+          <button type="button" aria-label="Remove from scene" title="Remove from scene" onClick={onRemove}
+            style={{ width: 26, height: 26, borderRadius: 'var(--radius-xs)', border: '1px solid var(--border-2)', background: 'var(--surface-raised)', cursor: 'pointer', color: 'var(--text-3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="12" height="12" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+          </button>
+        </div>
+      )}
     </Card>
   );
 }
@@ -395,6 +401,8 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
   const [raising, setRaising] = React.useState<AuthoredScene | null>(null);
   const [logOpen, setLogOpen] = React.useState(false);
   const [full, setFull] = React.useState(false);
+  const [panel, setPanel] = React.useState<'roll' | 'party' | 'lib' | null>(null);
+  const [pinned, setPinned] = React.useState(false);
   const [toast, setToast] = React.useState<{ tone: 'accent' | 'alive' | 'dead'; msg: string } | null>(null);
 
   React.useEffect(() => watchSceneTable(setT), []);
@@ -451,22 +459,82 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
       onEditSlot={(id) => { const s = library.find((x) => x.id === id); if (s) setEditing({ id: s.id, input: { name: s.name, image: s.image, text: s.text, notes: s.notes, npcs: s.npcs } }); }} />
   );
 
-  // Fullscreen — an immersive wall overlay with the live roll chips.
+  // Fullscreen — an immersive wall with edge navigation. The right border holds
+  // panel labels that unfurl on hover (or pin on click) and resize the wall; the
+  // bottom border holds the live roll board. Everything restores on close/leave.
   if (full) {
+    const tabs: { key: 'roll' | 'party' | 'lib'; label: string }[] = [
+      { key: 'roll', label: 'Cast' }, { key: 'party', label: 'Party' },
+      ...(gm ? [{ key: 'lib' as const, label: 'Scenes' }] : []),
+    ];
+    const openPanel = (k: 'roll' | 'party' | 'lib') => { if (pinned && panel === k) { setPanel(null); setPinned(false); } else { setPanel(k); setPinned(true); } };
+    const railBtn = (active: boolean): React.CSSProperties => ({
+      writingMode: 'vertical-rl', textOrientation: 'mixed', padding: '12px 6px', cursor: 'pointer',
+      fontFamily: 'var(--font-ui)', fontSize: 13, letterSpacing: '0.06em', border: 'none',
+      borderLeft: '2px solid', borderColor: active ? 'var(--accent)' : 'transparent',
+      background: active ? 'var(--surface-raised)' : 'transparent', color: active ? 'var(--text-1)' : 'var(--text-3)',
+    });
     return (
-      <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'var(--surface-page)', display: 'flex', flexDirection: 'column', padding: 16, gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'var(--surface-page)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--border-1)' }}>
           <div style={{ ...display, fontSize: 20 }}>{activeNames || 'The wall'}</div>
           <span style={{ flex: 1 }} />
           <Button size="sm" variant="secondary" onClick={() => setLogOpen(true)}>Log</Button>
-          <Button size="sm" onClick={() => setFull(false)}>Exit fullscreen</Button>
+          <Button size="sm" onClick={() => { setFull(false); setPanel(null); setPinned(false); }}>Exit fullscreen ⤡</Button>
         </div>
-        <div style={{ flex: 1, minHeight: 0 }}>{wall}</div>
-        {participants.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+
+        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+          <div style={{ flex: 1, minWidth: 0, padding: 16 }}>{wall}</div>
+
+          {/* Right border — the panel + its label rail. */}
+          <div style={{ display: 'flex', minHeight: 0 }} onMouseLeave={() => { if (!pinned) setPanel(null); }}>
+            {panel && (
+              <div style={{ width: 360, height: '100%', overflow: 'auto', background: 'var(--surface-sunken)', borderLeft: '1px solid var(--border-1)', padding: 14 }}>
+                {panel === 'roll' && <RollPanel mine={mine} moves={moves} sceneName={activeNames} onRolled={(msg, tone) => setToast({ tone: tone === 'dead' ? 'dead' : 'accent', msg })} />}
+                {panel === 'party' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {gm && <Button size="sm" variant="ghost" iconStart={<Bolt s={14} />} onClick={rollInitiativeAll}>Roll initiative</Button>}
+                    {participants.length === 0 ? <div style={{ ...serif, fontStyle: 'italic', color: 'var(--text-3)' }}>No one is in the scene.</div>
+                      : participants.map((p) => (
+                        <ParticipantCard key={p.key} p={p} roll={lastRolls[p.key]} gm={gm} acting={p.key === actingKey}
+                          onConditions={(c) => patchParticipant(p.key, { conditions: c })} onNeutralize={(v) => patchParticipant(p.key, { neutralized: v })}
+                          onRemove={() => setParticipants(participants.filter((x) => x.key !== p.key))} />
+                      ))}
+                  </div>
+                )}
+                {panel === 'lib' && gm && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <Button size="sm" variant="ghost" iconStart={<Plus s={14} />} onClick={() => setEditing({ id: null, input: blankScene() })}>New scene</Button>
+                    {library.map((s) => {
+                      const onWall = t.full?.sceneId === s.id || t.slots.some((sl) => sl?.sceneId === s.id);
+                      return (
+                        <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 'var(--radius-sm)', border: `1px solid ${onWall ? 'var(--accent)' : 'var(--border-1)'}`, background: onWall ? 'var(--accent-soft)' : 'var(--surface-inset)' }}>
+                          <span style={{ flex: 1, ...serif, fontSize: 14 }}>{s.name || 'Untitled'}</span>
+                          <Button size="sm" onClick={() => setRaising(s)}>Raise</Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--surface-sunken)', borderLeft: '1px solid var(--border-1)' }}>
+              {tabs.map((tb) => (
+                <button key={tb.key} type="button" onMouseEnter={() => { if (!pinned) setPanel(tb.key); }} onClick={() => openPanel(tb.key)} style={railBtn(panel === tb.key)}>{tb.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom border — the live roll board. */}
+        {participants.some((p) => lastRolls[p.key]) && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '10px 16px', borderTop: '1px solid var(--border-1)', background: 'var(--surface-sunken)' }}>
             {participants.map((p) => lastRolls[p.key] && <div key={p.key} style={{ padding: '6px 10px', borderRadius: 'var(--radius-sm)', background: 'var(--surface-card)', border: '1px solid var(--border-1)' }}><span style={{ ...mono, fontSize: 9, marginRight: 8 }}>{p.name}</span><ResultChip roll={lastRolls[p.key]} compact /></div>)}
           </div>
         )}
+
+        {editing && <SceneEditor initial={editing.input} onSave={persistScene} onClose={() => setEditing(null)} />}
+        {raising && <RaiseDialog scene={raising} slots={t.slots} onRaise={(target) => raise(raising, target)} onClose={() => setRaising(null)} />}
         {logOpen && <LogDialog onClose={() => setLogOpen(false)} />}
         {toast && <div style={{ position: 'fixed', right: 24, bottom: 24, zIndex: 1200 }}><Toast tone={toast.tone} title="The scene" onDismiss={() => setToast(null)}>{toast.msg}</Toast></div>}
       </div>
