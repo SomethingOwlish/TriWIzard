@@ -5,8 +5,7 @@ import App from './App';
 import './styles/global.css';
 
 // HashRouter keeps deep links working on GitHub Pages (no server rewrite needed).
-// The three-surface shell still owns surface/theme state for now; per-route
-// guards land in Tier 1.
+// App owns the route tree; per-app/per-role guards live in kits/auth/guards (Tier 1).
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root not found');
 

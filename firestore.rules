@@ -1,0 +1,107 @@
+rules_version = '2';
+
+// TriWizard — Firestore Security Rules v1 (B1.3).
+//
+// On the free Spark plan there are NO Cloud Functions / Admin SDK, so these
+// rules ARE the authorization layer — the client guards are only a courtesy.
+// Two principles hold the line:
+//   1. Standing lives in `roles/{app}__{uid}` (deterministic ids so a rule can
+//      `get` a bearer's standing directly — rules cannot run queries).
+//   2. The global `isAdmin` flag lives on `users/{uid}` and an account may
+//      never raise its own standing — only the console sets that key.
+//
+// Module collections (characters, lore, scenes, …) arrive in later tiers; this
+// file gates only what Tier 1 establishes and denies everything else.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function userData(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(myUid()))
+        && userData(myUid()).isAdmin == true;
+    }
+
+    function roleRef(app, uid) {
+      return /databases/$(database)/documents/roles/$(app + '__' + uid);
+    }
+
+    // An active grant of standing in a hall.
+    function hasActiveRole(app) {
+      return isSignedIn()
+        && exists(roleRef(app, myUid()))
+        && get(roleRef(app, myUid())).data.status == 'active';
+    }
+
+    // Master or admin standing in a hall — may tend that hall's ledger.
+    function isMasterOf(app) {
+      return isAdmin()
+        || (hasActiveRole(app)
+            && get(roleRef(app, myUid())).data.type in ['master', 'admin']);
+    }
+
+    // ---- users/{uid} -------------------------------------------------------
+    match /users/{uid} {
+      // A bearer reads their own profile; admins read any.
+      allow read: if isSignedIn() && (myUid() == uid || isAdmin());
+
+      // Bootstrap own profile — never self-granting admin.
+      allow create: if isSignedIn()
+        && myUid() == uid
+        && request.resource.data.isAdmin == false;
+
+      // Tend own profile but never touch the admin flag; admins may edit any.
+      allow update: if isAdmin()
+        || (isSignedIn()
+            && myUid() == uid
+            && request.resource.data.isAdmin == resource.data.isAdmin);
+
+      allow delete: if isAdmin();
+    }
+
+    // ---- roles/{roleId} ----------------------------------------------------
+    match /roles/{rid} {
+      // The bearer reads their own standing; masters/admins read their hall's.
+      allow read: if isSignedIn()
+        && (resource.data.uid == myUid()
+            || isAdmin()
+            || isMasterOf(resource.data.app));
+
+      // Only masters/admins enter standing, and only with the canonical id.
+      // Masters may not mint admins; admins may grant anything.
+      allow create: if isSignedIn()
+        && rid == request.resource.data.app + '__' + request.resource.data.uid
+        && (isAdmin()
+            || (isMasterOf(request.resource.data.app)
+                && request.resource.data.type != 'admin'));
+
+      allow update: if isSignedIn()
+        && rid == request.resource.data.app + '__' + request.resource.data.uid
+        && request.resource.data.app == resource.data.app
+        && request.resource.data.uid == resource.data.uid
+        && (isAdmin()
+            || (isMasterOf(resource.data.app)
+                && request.resource.data.type != 'admin'));
+
+      allow delete: if isAdmin() || isMasterOf(resource.data.app);
+    }
+
+    // ---- everything else ---------------------------------------------------
+    // Locked until its tier defines and tests explicit rules.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
