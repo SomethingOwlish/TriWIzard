@@ -86,11 +86,13 @@ Build order: **Foundation → TTRPG → LARP → Site → Hardening.**
 > **T1 notes (2026-06-30).** State via **zustand** (`src/stores/sessionStore.ts`, wired by `useSessionInit`). No live Firebase secrets in this clone (`.env` is gitignored) — every lib guards on `isFirebaseConfigured`, so build/render works credential-less and shows an in-world "hall is sealed" notice; fill `.env` to go live. Theme is now remembered per surface (localStorage + profile mirror). Build + typecheck green.
 
 ### TIER 2 — TTRPG Player Core: Character Card (PBtA)
-> Schema sourced from the public Notion PBtA content.
-- [ ] **B2.1** PBtA card data model (playbook, stats, moves, harm, XP, advances, gear, bonds).
-- [ ] **B2.2** Player card view + allowed-field editing + save.
-- [ ] **B2.3** Advancement/assessment flow: GM grants XP → GM toggles "advancement open" → player opens assessment mode → applies advances → save.
-- [ ] **B2.4** GM: list of all player cards, open/edit any, edit GM-only fields.
+> Schema sourced from the public Notion PBtA content → `docs/pbta-schema.md` (custom
+> Durmstrang PBtA derivative: 6 stats, 5 rune-Houses, conditions-as-harm, non-standard
+> dice ladder, Hope/XP/galleon economy).
+- [x] **B2.1** PBtA card data model — `src/lib/pbta.ts` (stats, Houses, conditions, moves, advancement costs, per-field `editableBy` descriptors) + `src/lib/characters.ts` (Firestore `characters/{autoId}` data layer over the Tier-1 save→publish primitive; multiple cards per player keyed by `ownerUid`).
+- [x] **B2.2** Player card view + allowed-field editing + save→publish — descriptor-driven `CharacterSheet`, player roster with enrol, in `src/kits/ttrpg/Characters.tsx`.
+- [x] **B2.3** Advancement/assessment flow — GM grants XP + toggles "Open assessment"; player assessment mode unlocks `advancementLocked` fields (stats/moves) and spends XP by the cost tables.
+- [x] **B2.4** GM roster — master/admin sees all table characters, opens/edits any, edits GM-only fields; driven by `effectiveRole('ttrpg')`. Security Rules + composite index added for `characters`.
 
 ### TIER 3 — TTRPG Scene (live) + Dice + Moves
 - [ ] **B3.1** Scene data model + GM setup (create scene, participants, elements).
