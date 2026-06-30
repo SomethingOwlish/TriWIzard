@@ -11,14 +11,14 @@ import { Button, Card, Badge, Avatar, Field, Input, Textarea, Select, Switch, Di
 import { Plus, Edit, Dice, Bolt } from '../icons';
 import {
   STAT_KEYS, STATS, CONDITIONS, CONDITION_PENALTY, isCritical, HOUSE_BY_ID, isGmRole,
-  type CardRole, type StatKey, type ConditionLevel, type HouseId,
+  type CardRole, type StatKey, type ConditionLevel, type HouseId, type KnownMove,
 } from '../../lib/pbta';
 import { rollPbta, rollInitiative, BANDS, signed, rollLabel } from '../../lib/pbtaDice';
 import {
   watchSceneTable, watchScenes, updateTable, activateScene, createScene, saveScene, deleteScene,
-  recordRoll, fetchRollLog, blankScene,
+  recordRoll, fetchRollLog, blankScene, fitFrames,
   type SceneTable, type AuthoredScene, type SceneInput, type SceneNpc, type SceneParticipant,
-  type LastRoll, type RollEntry,
+  type SceneFrame, type SceneLayout, type LastRoll, type RollEntry,
 } from '../../lib/scenes';
 import { watchPublishedMoves, type MoveEntry } from '../../lib/moves';
 import { watchAllCharacters, type CharacterRecord } from '../../lib/characters';
@@ -50,8 +50,19 @@ function participantFromChar(rec: CharacterRecord): SceneParticipant {
   return {
     key: rec.id, kind: 'pc', charId: rec.id, uid: rec.ownerUid,
     name: rec.name || 'Unnamed', house: rec.house, stats: { ...stats }, conditions: { ...conditions },
-    neutralized: false,
+    neutralized: false, moves: sheet?.moves ?? [],
   };
+}
+
+/** The catalogue moves this participant may roll: basics (everyone) + their own
+ *  known moves. NPC tokens are GM-driven, so the GM may use any provided move. */
+function allowedMoves(p: SceneParticipant | null, catalogue: MoveEntry[]): MoveEntry[] {
+  if (!p) return [];
+  if (p.kind === 'npc') return catalogue;
+  const known: KnownMove[] = p.moves ?? [];
+  const ids = new Set(known.map((k) => k.id).filter(Boolean));
+  const names = new Set(known.map((k) => k.name.toLowerCase()));
+  return catalogue.filter((m) => m.kind === 'basic' || (m.srcId && ids.has(m.srcId)) || names.has(m.name.toLowerCase()));
 }
 
 // ---------------------------------------------------------------------------
@@ -99,6 +110,42 @@ function ConditionPips({ p, editable, onChange }: {
             style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer' }}>{body}</button>
         );
       })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Scene frames — a 1 / 2 / 4 panel grid; each panel is its image (cover) or text
+// ---------------------------------------------------------------------------
+
+function FrameCell({ frame }: { frame: SceneFrame }) {
+  const img = frame.image.trim();
+  const text = frame.text.trim();
+  return (
+    <div style={{
+      position: 'relative', minHeight: 170, overflow: 'hidden',
+      borderRadius: 'var(--radius-md)', border: '1px solid var(--border-1)', boxShadow: 'var(--shadow-well)',
+      background: img ? `center / cover no-repeat url("${img}")` : 'var(--surface-inset)',
+      display: 'flex', alignItems: img ? 'flex-end' : 'flex-start',
+    }}>
+      {text ? (
+        <div style={{
+          width: '100%', padding: 16, ...serif, whiteSpace: 'pre-wrap', lineHeight: 1.6, color: 'var(--text-1)',
+          background: img ? 'linear-gradient(transparent, color-mix(in srgb, var(--surface-page) 90%, transparent))' : 'transparent',
+        }}>{text}</div>
+      ) : !img ? (
+        <div style={{ padding: 16, ...serif, fontStyle: 'italic', color: 'var(--text-3)' }}>An empty frame.</div>
+      ) : null}
+    </div>
+  );
+}
+
+function SceneFrames({ scene }: { scene: NonNullable<SceneTable['scene']> }) {
+  const frames = fitFrames(scene.frames ?? [], scene.layout ?? 1);
+  const cols = (scene.layout ?? 1) === 1 ? '1fr' : '1fr 1fr';
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: cols, gap: 12 }}>
+      {frames.map((f) => <FrameCell key={f.id} frame={f} />)}
     </div>
   );
 }
@@ -162,7 +209,9 @@ function RollPanel({ mine, moves, sceneName, onRolled }: {
 
   React.useEffect(() => { if (!mine.some((m) => m.key === pk)) setPk(mine[0]?.key ?? ''); }, [mine, pk]);
   const p = mine.find((m) => m.key === pk) ?? null;
-  const move = moves.find((m) => m.id === moveId) ?? null;
+  const ownMoves = React.useMemo(() => allowedMoves(p, moves), [p, moves]);
+  React.useEffect(() => { if (moveId && !ownMoves.some((m) => m.id === moveId)) setMoveId(''); }, [ownMoves, moveId]);
+  const move = ownMoves.find((m) => m.id === moveId) ?? null;
   // A move with a fixed stat drives the choice; otherwise the player picks one.
   const effStat: StatKey = move?.stat ?? stat;
   const calc = p ? rollMod(p, effStat, situational) : null;
@@ -201,10 +250,10 @@ function RollPanel({ mine, moves, sceneName, onRolled }: {
             </Select>
           </Field>
         )}
-        <Field label="Move" hint="Optional — sets the stat & shows the outcome">
+        <Field label="Move" hint={ownMoves.length ? 'Optional — sets the stat & shows the outcome' : 'No moves known yet'}>
           <Select value={moveId} onChange={(e) => setMoveId(e.target.value)}>
             <option value="">— free roll —</option>
-            {moves.map((m) => <option key={m.id} value={m.id}>{m.name}{m.stat ? ` · ${STATS[m.stat].en}` : ''}</option>)}
+            {ownMoves.map((m) => <option key={m.id} value={m.id}>{m.name}{m.stat ? ` · ${STATS[m.stat].en}` : ''}</option>)}
           </Select>
         </Field>
         <div style={{ display: 'flex', gap: 12 }}>
@@ -279,7 +328,27 @@ function SceneEditor({ initial, onSave, onClose, onDelete }: {
       }>
       <div style={{ display: 'grid', gap: 14, padding: '4px 0' }}>
         <Field label="Name"><Input value={s.name} onChange={(e) => set({ name: e.target.value })} placeholder="The drowned hall…" /></Field>
-        <Field label="Background" hint="Shown to the table"><Textarea rows={4} value={s.background} onChange={(e) => set({ background: e.target.value })} /></Field>
+        <Field label="Layout" hint="How many frames show, in a 2×2 grid">
+          <Select value={String(s.layout)} onChange={(e) => { const L = Number(e.target.value) as SceneLayout; set({ layout: L, frames: fitFrames(s.frames, L) }); }}>
+            <option value="1">1 frame</option>
+            <option value="2">2 frames</option>
+            <option value="4">4 frames · 2×2</option>
+          </Select>
+        </Field>
+        <div>
+          <div style={{ ...mono, marginBottom: 8 }}>Frames · an image link shows as the background, else the text</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {fitFrames(s.frames, s.layout).map((f, i) => (
+              <div key={f.id} style={{ padding: 10, border: '1px solid var(--border-1)', borderRadius: 'var(--radius-sm)', background: 'var(--surface-inset)' }}>
+                <div style={{ ...mono, fontSize: 9, marginBottom: 6 }}>Frame {i + 1}</div>
+                <div style={{ display: 'grid', gap: 8 }}>
+                  <Input size="sm" value={f.image} placeholder="Image URL (https://…)" onChange={(e) => set({ frames: fitFrames(s.frames, s.layout).map((x, j) => j === i ? { ...x, image: e.target.value } : x) })} />
+                  <Textarea rows={2} value={f.text} placeholder="…or text for this frame" onChange={(e) => set({ frames: fitFrames(s.frames, s.layout).map((x, j) => j === i ? { ...x, text: e.target.value } : x) })} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
         <Field label="Master's notes" hint="Behind the screen — not shown to players"><Textarea rows={3} value={s.notes} onChange={(e) => set({ notes: e.target.value })} /></Field>
         <div>
           <div style={{ ...mono, marginBottom: 8 }}>NPC tokens</div>
@@ -349,7 +418,7 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
   const patchParticipant = (key: string, patch: Partial<SceneParticipant>) =>
     setParticipants(participants.map((p) => p.key === key ? { ...p, ...patch } : p));
   const addPc = (rec: CharacterRecord) => { if (participants.some((p) => p.key === rec.id)) return; setParticipants([...participants, participantFromChar(rec)]); };
-  const addNpc = () => { const k = uid(); setParticipants([...participants, { key: k, kind: 'npc', name: 'New foe', house: '', stats: { dex: 0, end: 0, will: 0, mag: 0, per: 0, wit: 0 }, conditions: { ...NO_COND }, neutralized: false }]); };
+  const addNpc = () => { const k = uid(); setParticipants([...participants, { key: k, kind: 'npc', name: 'New foe', house: '', stats: { dex: 0, end: 0, will: 0, mag: 0, per: 0, wit: 0 }, conditions: { ...NO_COND }, neutralized: false, moves: [] }]); };
 
   function rollInitiativeAll() {
     if (participants.length === 0) return;
@@ -385,19 +454,17 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
         <Button variant="secondary" size="sm" onClick={() => setLogOpen(true)}>Open the log</Button>
       </div>
 
-      {/* Active scene background */}
+      {/* Active scene — the frame grid (images as backgrounds, else text) */}
       {t.scene ? (
-        <Card padding="22px" style={{ marginBottom: 20 }}>
-          {t.scene.background
-            ? <div style={{ ...serif, whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{t.scene.background}</div>
-            : <div style={{ ...serif, fontStyle: 'italic', color: 'var(--text-3)' }}>The scene is set, but unwritten.</div>}
+        <div style={{ marginBottom: 20 }}>
+          <SceneFrames scene={t.scene} />
           {gm && t.scene.notes && (
-            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-1)' }}>
+            <Card padding="16px" style={{ marginTop: 12 }}>
               <div style={{ ...mono, fontSize: 9, color: 'var(--accent-text)', marginBottom: 4 }}>Behind the screen</div>
               <div style={{ ...serif, fontSize: 14, color: 'var(--text-2)', whiteSpace: 'pre-wrap' }}>{t.scene.notes}</div>
-            </div>
+            </Card>
           )}
-        </Card>
+        </div>
       ) : (
         <Card padding="22px" style={{ marginBottom: 20 }}>
           <div style={{ ...serif, fontStyle: 'italic', color: 'var(--text-3)' }}>The master has not yet raised a scene.</div>
@@ -484,7 +551,7 @@ export function SceneModule({ role, userUid }: { role: CardRole; userUid: string
                           <div style={{ ...serif, fontSize: 14 }}>{s.name || 'Untitled'}</div>
                           <div style={{ ...mono, fontSize: 9 }}>{s.npcs.length} NPC{s.npcs.length === 1 ? '' : 's'}{active ? ' · active' : ''}</div>
                         </div>
-                        <Button size="sm" variant="ghost" iconStart={<Edit s={13} />} onClick={() => setEditing({ id: s.id, input: { name: s.name, background: s.background, notes: s.notes, npcs: s.npcs } })}>Edit</Button>
+                        <Button size="sm" variant="ghost" iconStart={<Edit s={13} />} onClick={() => setEditing({ id: s.id, input: { name: s.name, notes: s.notes, layout: s.layout, frames: s.frames, npcs: s.npcs } })}>Edit</Button>
                         {!active && <Button size="sm" onClick={() => activateScene(s).then(() => setToast({ tone: 'accent', msg: 'The scene rises.' }))}>Raise</Button>}
                       </div>
                     );
