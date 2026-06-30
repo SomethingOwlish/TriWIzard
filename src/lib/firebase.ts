@@ -11,13 +11,31 @@ import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
  *
  * Config is read from Vite env vars (see `.env` / `.env.example`).
  */
+/**
+ * Public web config for the `triwizard-32a18` project. A Firebase web config is
+ * NOT a secret — it ships in the client bundle to every visitor's browser by
+ * design; the data is protected by Firestore Security Rules (see firestore.rules),
+ * not by hiding these identifiers. Committing it lets the GitHub Pages build work
+ * without provisioning Actions secrets. Set the matching `VITE_FIREBASE_*` env
+ * vars (e.g. a `.env`) to point a local build at a different project.
+ */
+const FALLBACK_CONFIG = {
+  apiKey: 'AIzaSyDjlGINOvCWSU9543wIggyTvmmYwkUW9dk',
+  authDomain: 'triwizard-32a18.firebaseapp.com',
+  projectId: 'triwizard-32a18',
+  storageBucket: 'triwizard-32a18.firebasestorage.app',
+  messagingSenderId: '941826852943',
+  appId: '1:941826852943:web:d0549d067d4d375315823a',
+};
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || FALLBACK_CONFIG.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || FALLBACK_CONFIG.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || FALLBACK_CONFIG.projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || FALLBACK_CONFIG.storageBucket,
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || FALLBACK_CONFIG.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || FALLBACK_CONFIG.appId,
 };
 
 /**
