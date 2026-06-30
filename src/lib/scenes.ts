@@ -273,13 +273,17 @@ function toRoll(id: string, data: Record<string, unknown>): RollEntry {
   };
 }
 
+// Both roll queries order by `createdAt` only (no `app` filter) so they rely on
+// Firestore's automatic single-field index and need NO composite index deploy —
+// every roll is `app: 'ttrpg'` today, and the read rule already gates the hall.
+
 /** Live feed of the most recent rolls — drives the live roll board. */
 export function watchRecentRolls(cb: (rows: RollEntry[]) => void, max = 40): () => void {
   if (!isFirebaseConfigured) {
     cb([]);
     return () => {};
   }
-  const q = query(collection(db, ROLLS), where('app', '==', 'ttrpg'), orderBy('createdAt', 'desc'), fbLimit(max));
+  const q = query(collection(db, ROLLS), orderBy('createdAt', 'desc'), fbLimit(max));
   return onSnapshot(
     q,
     (snap) => cb(snap.docs.map((d) => toRoll(d.id, d.data()))),
@@ -290,9 +294,7 @@ export function watchRecentRolls(cb: (rows: RollEntry[]) => void, max = 40): () 
 /** Read a deeper slice of the log on demand (not live). */
 export async function fetchRollLog(max = 60): Promise<RollEntry[]> {
   if (!isFirebaseConfigured) return [];
-  const snap = await getDocs(
-    query(collection(db, ROLLS), where('app', '==', 'ttrpg'), orderBy('createdAt', 'desc'), fbLimit(max)),
-  );
+  const snap = await getDocs(query(collection(db, ROLLS), orderBy('createdAt', 'desc'), fbLimit(max)));
   return snap.docs.map((d) => toRoll(d.id, d.data()));
 }
 
