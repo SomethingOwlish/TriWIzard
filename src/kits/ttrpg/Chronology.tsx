@@ -11,6 +11,7 @@ import {
   WORLD_ID, blankChronicle, fetchChronicle, fetchPlayerChronicles, saveChronicleDraft,
   publishChronicle, unpublishChronicle, type ChronEvent, type ChronContent, type Chronicle,
 } from '../../lib/chronology';
+import { mergeWorldChronology } from '../../lib/notionSeed';
 
 const uid = () => Math.random().toString(36).slice(2, 9);
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--text-3)' };
@@ -55,6 +56,13 @@ function ChronicleEditor({ target, onToast }: {
     try { await unpublishChronicle(target.id); setDoc(await fetchChronicle(target.id)); onToast({ tone: 'accent', msg: 'Withdrawn from the table.' }); }
     catch (e) { onToast({ tone: 'dead', msg: e instanceof Error ? e.message : 'Refused.' }); }
   }
+  async function importArchive() {
+    try {
+      const { events: merged, created, skipped } = await mergeWorldChronology(events);
+      setEvents(merged);
+      onToast({ tone: 'accent', msg: created ? `From Notion: ${created} event${created === 1 ? '' : 's'} added${skipped ? `, ${skipped} already here` : ''}. Save to keep them.` : 'The chronicle already holds every Notion event.' });
+    } catch (e) { onToast({ tone: 'dead', msg: e instanceof Error ? e.message : 'The chronicle refused it.' }); }
+  }
 
   if (!loaded) return <div style={{ padding: 32, ...serif, color: 'var(--text-3)' }}>Reading the chronicle…</div>;
   return (
@@ -67,6 +75,7 @@ function ChronicleEditor({ target, onToast }: {
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {doc?.isPublished ? <Badge tone="alive" dot>shown</Badge> : <Badge tone="wounded" outline>held</Badge>}
           {doc?.state === 'dirty' && <Badge tone="ember" outline>unpublished edits</Badge>}
+          {target.kind === 'world' && <Button size="sm" variant="ghost" iconStart={<Clock s={14} />} onClick={importArchive}>Import from Notion</Button>}
           <Button size="sm" variant="secondary" onClick={() => save()}>Save</Button>
           <Button size="sm" onClick={() => save('publish')}>Provide</Button>
           {doc?.isPublished && <Button size="sm" variant="ghost" onClick={withdraw}>Withdraw</Button>}
