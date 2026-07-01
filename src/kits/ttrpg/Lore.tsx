@@ -12,6 +12,7 @@ import {
   blankLore, createLore, saveLoreDraft, publishLore, unpublishLore, deleteLore, fetchLore,
   loreTitle, type LoreContent, type LoreEntry,
 } from '../../lib/lore';
+import { importLoreArchive } from '../../lib/notionSeed';
 
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--text-3)' };
 const display: React.CSSProperties = { fontFamily: 'var(--font-display)', fontWeight: 800, color: 'var(--text-1)' };
@@ -132,13 +133,28 @@ export function LoreModule({ role }: { role: CardRole }) {
     finally { setBusy(false); }
   }
 
+  async function importArchive() {
+    setBusy(true);
+    try {
+      const r = await importLoreArchive(rows.map((x) => loreTitle(x, true)));
+      await reload();
+      setToast({ tone: 'accent', msg: `From Notion: ${r.created} page${r.created === 1 ? '' : 's'} inscribed${r.skipped ? `, ${r.skipped} already here` : ''}.` });
+    } catch (err) { setToast({ tone: 'dead', msg: err instanceof Error ? err.message : 'The archive refused it.' }); }
+    finally { setBusy(false); }
+  }
+
   const roots = byParent.get(null) ?? [];
   return (
     <div style={{ display: 'flex', height: '100%', minHeight: 0 }}>
       <aside style={{ width: 264, flexShrink: 0, borderRight: '1px solid var(--border-1)', background: 'var(--surface-sunken)', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
         <div style={{ padding: '18px 16px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div><div style={mono}>The archive</div><div style={{ ...display, fontSize: 19 }}>Lore</div></div>
-          {gm && <Button size="sm" variant="ghost" iconStart={<Plus s={14} />} onClick={() => setEditing({ id: null, content: blankLore(), parentId: null })}>New</Button>}
+          {gm && (
+            <div style={{ display: 'flex', gap: 4 }}>
+              <Button size="sm" variant="ghost" iconStart={<Scroll s={14} />} onClick={importArchive} disabled={busy} title="Import lore from Notion">Notion</Button>
+              <Button size="sm" variant="ghost" iconStart={<Plus s={14} />} onClick={() => setEditing({ id: null, content: blankLore(), parentId: null })}>New</Button>
+            </div>
+          )}
         </div>
         <div style={{ padding: '0 8px 16px' }}>
           {roots.length === 0

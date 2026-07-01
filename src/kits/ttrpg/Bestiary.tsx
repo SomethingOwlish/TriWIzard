@@ -7,13 +7,14 @@ import React from 'react';
 import {
   Button, Card, Badge, Field, Input, Textarea, Select, Switch, Dialog, Toast, ImagePicker, Markdown,
 } from '../../components';
-import { Plus, Edit, Users, Chart } from '../icons';
+import { Plus, Edit, Users, Chart, Scroll } from '../icons';
 import { STAT_KEYS, STATS, HOUSES, HOUSE_BY_ID, isGmRole, type CardRole, type CharStatus, type HouseId, type StatKey } from '../../lib/pbta';
 import {
   blankNpcCard, blankNpcExtras, createNpc, saveNpcDraft, publishNpc, unpublishNpc, deleteNpc,
   fetchNpcs, setNpcPos, fetchEdges, saveEdges,
   type NpcCard, type NpcEntry, type NpcExtras, type NpcEdge, type EdgeTone,
 } from '../../lib/npcs';
+import { importBestiaryArchive } from '../../lib/notionSeed';
 
 const uid = () => Math.random().toString(36).slice(2, 8);
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--text-3)' };
@@ -234,6 +235,13 @@ export function BestiaryModule({ role }: { role: CardRole }) {
     catch (e) { setToast({ tone: 'dead', msg: e instanceof Error ? e.message : 'Refused.' }); }
   }
   async function persistEdges(next: NpcEdge[]) { setEdges(next); try { await saveEdges(next); } catch { /* noop */ } }
+  async function importArchive() {
+    try {
+      const r = await importBestiaryArchive(rows.map((n) => n.draft?.name ?? ''));
+      await reload();
+      setToast({ tone: 'accent', msg: `From Notion: ${r.created} soul${r.created === 1 ? '' : 's'} drafted${r.skipped ? `, ${r.skipped} already known` : ''}.` });
+    } catch (e) { setToast({ tone: 'dead', msg: e instanceof Error ? e.message : 'The archive refused it.' }); }
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
@@ -243,6 +251,7 @@ export function BestiaryModule({ role }: { role: CardRole }) {
           <div style={{ display: 'flex', gap: 8 }}>
             <Button size="sm" variant={view === 'dossiers' ? 'primary' : 'secondary'} iconStart={<Users s={15} />} onClick={() => setView('dossiers')}>Dossiers</Button>
             <Button size="sm" variant={view === 'web' ? 'primary' : 'secondary'} iconStart={<Chart s={15} />} onClick={() => setView('web')}>The Web</Button>
+            <Button size="sm" variant="secondary" iconStart={<Scroll s={15} />} onClick={importArchive}>Import from Notion</Button>
             <Button size="sm" iconStart={<Plus s={15} />} onClick={() => setEditing({ id: null, card: blankNpcCard(), extras: blankNpcExtras() })}>New NPC</Button>
           </div>
         )}

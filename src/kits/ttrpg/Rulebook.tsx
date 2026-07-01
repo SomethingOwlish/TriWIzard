@@ -12,6 +12,7 @@ import {
   blankRule, createRule, saveRuleDraft, publishRule, unpublishRule, deleteRule, fetchRules,
   type RuleContent, type RuleEntry, type RuleKind, type RuleColumn,
 } from '../../lib/rulebook';
+import { importRulebookArchive } from '../../lib/notionSeed';
 
 const uid = () => Math.random().toString(36).slice(2, 7);
 const mono: React.CSSProperties = { fontFamily: 'var(--font-mono)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.16em', color: 'var(--text-3)' };
@@ -117,6 +118,14 @@ export function RulebookModule({ role }: { role: CardRole }) {
     catch (e) { setToast({ tone: 'dead', msg: e instanceof Error ? e.message : 'Refused.' }); }
   }
 
+  async function importArchive() {
+    try {
+      const r = await importRulebookArchive(rows.map((x) => x.draft?.title ?? ''));
+      await reload();
+      setToast({ tone: 'accent', msg: `From Notion: ${r.created} article${r.created === 1 ? '' : 's'} inscribed${r.skipped ? `, ${r.skipped} already here` : ''}.` });
+    } catch (e) { setToast({ tone: 'dead', msg: e instanceof Error ? e.message : 'The rulebook refused it.' }); }
+  }
+
   const sections = React.useMemo(() => {
     const m = new Map<string, RuleEntry[]>();
     for (const r of rows) { const c = gm ? r.draft : r.published; const s = (c?.section || 'Misc').trim() || 'Misc'; m.set(s, [...(m.get(s) ?? []), r]); }
@@ -129,6 +138,7 @@ export function RulebookModule({ role }: { role: CardRole }) {
         <div><div style={mono}>{gm ? 'Master · the rulebook' : 'Your reference'}</div><h1 style={{ margin: '4px 0 0', ...display, fontSize: 34 }}>Rules</h1></div>
         {gm && (
           <div style={{ display: 'flex', gap: 8 }}>
+            <Button variant="secondary" size="sm" iconStart={<Compass s={15} />} onClick={importArchive}>Import from Notion</Button>
             <Button variant="secondary" size="sm" iconStart={<Plus s={15} />} onClick={() => setEditing({ id: null, content: blankRule('table') })}>Table</Button>
             <Button size="sm" iconStart={<Plus s={15} />} onClick={() => setEditing({ id: null, content: blankRule('article') })}>Article</Button>
           </div>
